@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{% if file %}{{ file.name }} — CAD UI{% else %}CAD UI — {{ workspace_name }}{% endif %}{% endblock %}
+{% block crumb %}Пространство{% endblock %}
+{% block page_h %}Документы{% endblock %}
+{% block page_sub %}{% if file %}{{ file.rel_path }}{% else %}Дерево рабочего пространства{% endif %}{% endblock %}
+
+{% block content %}
+<div class="doc-layout">
+  <aside class="tree-pane">
+    <ul class="children root" data-path=""></ul>
+  </aside>
+  <section id="doc-view">
+    {% if file %}
+    <article class="viewer">
+      <header class="viewer-head">
+        <div class="viewer-title">
+          <h2>{{ file.name }}</h2>
+          <button class="fav-btn{% if file.is_favorite %} on{% endif %}" data-path="{{ file.rel_path }}"
+                  title="В избранное">★</button>
+        </div>
+        <div class="viewer-meta">
+          <span class="v-path">{{ file.rel_path }}</span>
+          <span class="v-mtime">изменён {{ file.mtime }}</span>
+        </div>
+      </header>
+      {% if file.kind == "markdown" %}
+        {% if file.meta %}
+        <details class="frontmatter">
+          <summary>frontmatter</summary>
+          <table>
+            {% for k, v in file.meta.items() %}<tr><td>{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}
+          </table>
+        </details>
+        {% endif %}
+        <div class="md-content">{{ file.content_html | safe }}</div>
+      {% elif file.kind == "text" %}
+        <pre class="text-content">{{ file.text }}</pre>
+      {% elif file.kind == "image" %}
+        <div class="image-content"><img src="/raw?path={{ file.rel_path | urlencode }}" alt="{{ file.name }}"></div>
+      {% else %}
+        <p class="empty">Бинарный файл ({{ file.size_mb }} МБ) — просмотр недоступен.</p>
+      {% endif %}
+    </article>
+    {% else %}
+    <div class="doc-placeholder">
+      <div class="ph-mark">&gt;_</div>
+      <p>Выбери файл в дереве — markdown откроется здесь.</p>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% if items %}
+<ul class="filelist">
+  {% for it in items %}
+  <li>
+    <a class="nav" href="/view?path={{ it.entry.rel_path | urlencode }}" title="{{ it.entry.rel_path }}">
+      <span class="fl-name">{{ it.entry.name }}</span>
+      <span class="fl-path">{{ it.entry.rel_path }}</span>
+      <span class="fl-mtime">{{ it.mtime }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="empty">{{ empty_text }}</p>
+{% endif %}

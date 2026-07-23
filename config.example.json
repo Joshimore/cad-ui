@@ -1,0 +1,5 @@
+{
+  "_comment": "Скопируй этот файл в КОРЕНЬ своей рабочей папки как workspace.config.json (не в репозиторий cad-ui). Всё опционально — без конфига работают дефолты.",
+  "exclude_dirs": ["my-private-folder", "*_cache"],
+  "exclude_extensions": [".parquet"]
+}

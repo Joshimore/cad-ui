@@ -1,0 +1,13 @@
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# runtime state (isolated mode: the repo itself is the workspace)
+.cad-ui/
+
+# personal config — webhooks and local paths must never reach the shared repo
+workspace.config.json
+
+# local Claude Code settings (agents/skills in .claude/ ARE committed)
+.claude/settings.local.json

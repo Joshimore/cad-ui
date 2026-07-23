@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block crumb %}Пространство{% endblock %}
+{% block page_h %}Центр управления{% endblock %}
+{% block page_sub %}Состояние пространства и активная работа{% endblock %}
+
+{% block content %}
+<div class="home-grid">
+
+  <section class="card hero">
+    <div class="hero-left">
+      <div class="card-label">Центр управления · рабочее пространство</div>
+      <h2 class="hero-title">Все документы<br>и агенты — <em>в одном<br>поле зрения.</em></h2>
+      <p class="hero-note">Дерево, markdown, реестр агентов и навыков — всё локально.
+        Браузер не получает права выполнять команды.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/docs">◫ Открыть документы</a>
+        <a class="btn btn-ghost" href="/recent">◷ Недавние</a>
+      </div>
+    </div>
+    <div class="hero-orbit" aria-hidden="true">
+      <div class="orbit o1"></div>
+      <div class="orbit o2"></div>
+      <div class="orbit o3"></div>
+      <div class="orbit-core">OS</div>
+      <span class="planet p1"></span>
+      <span class="planet p2"></span>
+      <span class="planet p3"></span>
+      <span class="planet p4"></span>
+      <span class="planet p5"></span>
+    </div>
+  </section>
+
+  <section class="card side-card">
+    <div class="card-label">Состояние</div>
+    <h3 class="side-title">Всё в порядке <span class="ok-mark">✓</span></h3>
+    <ul class="stat-rows">
+      <li>
+        <span class="stat-ico i-orange">◷</span>
+        <span class="stat-text">Недавние документы<span class="stat-sub">изменения в пространстве</span></span>
+        <span class="stat-num">{{ recent_count }}</span>
+      </li>
+      <li>
+        <span class="stat-ico i-violet">⬡</span>
+        <span class="stat-text">Агенты<span class="stat-sub">.claude/agents</span></span>
+        <span class="stat-num">{{ agent_count }}</span>
+      </li>
+      <li>
+        <span class="stat-ico i-green">✦</span>
+        <span class="stat-text">Навыки<span class="stat-sub">.claude/skills</span></span>
+        <span class="stat-num">{{ skill_count }}</span>
+      </li>
+      <li>
+        <span class="stat-ico i-gold">★</span>
+        <span class="stat-text">Избранное<span class="stat-sub">закреплённые файлы</span></span>
+        <span class="stat-num">{{ fav_count }}</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card wide-card">
+    <div class="card-head">
+      <div class="card-label">Состояние работы</div>
+      <a class="card-link" href="/recent">Открыть все ↗</a>
+    </div>
+    <h3 class="side-title">Недавние изменения</h3>
+    {% with items = recents, empty_text = "Пока пусто" %}{% include "_filelist.html" %}{% endwith %}
+  </section>
+
+</div>
+{% endblock %}

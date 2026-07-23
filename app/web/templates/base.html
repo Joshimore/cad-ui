@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CAD UI — {{ workspace_name }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="nav-rail">
+    <div class="logo">
+      <span class="logo-mark">&gt;_</span>
+      <span class="logo-text">
+        <span class="logo-name">CAD UI</span>
+        <span class="logo-sub">command &amp; agent dashboard</span>
+      </span>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Пространство</div>
+      <a class="nav-item{% if nav == 'home' %} active{% endif %}" href="/">
+        <span class="ni-ico">▦</span> Центр управления
+      </a>
+      <a class="nav-item{% if nav == 'docs' %} active{% endif %}" href="/docs">
+        <span class="ni-ico">◫</span> Документы
+      </a>
+      <a class="nav-item{% if nav == 'recent' %} active{% endif %}" href="/recent">
+        <span class="ni-ico">◷</span> Недавние
+      </a>
+      <a class="nav-item{% if nav == 'favorites' %} active{% endif %}" href="/favorites">
+        <span class="ni-ico">★</span> Избранное
+      </a>
+    </div>
+
+    {% if has_agents_panel %}
+    <div class="nav-section">
+      <div class="nav-label">Реестр</div>
+      <a class="nav-item{% if nav == 'agents' %} active{% endif %}" href="/agents">
+        <span class="ni-ico">⬡</span> Агенты
+      </a>
+      <a class="nav-item{% if nav == 'skills' %} active{% endif %}" href="/skills">
+        <span class="ni-ico">✦</span> Навыки
+      </a>
+    </div>
+    {% endif %}
+
+    <div class="nav-foot">
+      <span class="dot green"></span>
+      <span class="nav-foot-text" title="{{ workspace }}">{{ workspace_name }}</span>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <header class="topbar">
+      <div class="topbar-title">
+        <div class="crumb">{% block crumb %}Пространство{% endblock %}</div>
+        <h1>{% block page_h %}Центр управления{% endblock %}
+          <span class="page-sub">{% block page_sub %}{% endblock %}</span>
+        </h1>
+      </div>
+      <div class="topbar-tools">
+        <span class="palette-pill" title="Поиск появится в фазе 2">⌕ Поиск <kbd>скоро</kbd></span>
+        <span class="local-badge"><span class="dot green"></span> Локально</span>
+      </div>
+    </header>
+
+    <main id="content">{% block content %}{% endblock %}</main>
+
+    <footer class="statusbar">
+      <span class="dot green"></span>
+      <span class="sb-item">локально · 127.0.0.1</span>
+      <span class="sb-item sb-path" title="{{ workspace }}">{{ workspace }}</span>
+      <span class="sb-item">избранное {{ fav_count }}</span>
+    </footer>
+  </div>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block crumb %}Реестр{% endblock %}
+{% block page_h %}{{ page_title }}{% endblock %}
+{% block page_sub %}{{ page_sub }}{% endblock %}
+
+{% block content %}
+<div class="page-pad">
+  {% if items %}
+  <div class="registry-grid">
+    {% for it in items %}
+    <a class="card reg-card nav" href="/view?path={{ it.rel_path | urlencode }}">
+      <div class="reg-head">
+        <span class="reg-badge">{% if nav == 'agents' %}⬡{% else %}✦{% endif %}</span>
+        <span class="reg-name">{{ it.name }}</span>
+      </div>
+      {% if it.description %}<p class="reg-desc">{{ it.description }}</p>{% endif %}
+      {% if it.tools %}<div class="reg-tools">{{ it.tools }}</div>{% endif %}
+      <div class="reg-path">{{ it.rel_path }}</div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <section class="card"><p class="empty">{{ empty_text }}</p></section>
+  {% endif %}
+</div>
+{% endblock %}

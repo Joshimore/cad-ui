@@ -1,0 +1,20 @@
+{% for e in entries %}
+{% if e.is_dir %}
+<li class="dir{% if e.excluded %} excluded{% endif %}" data-path="{{ e.rel_path }}">
+  <span class="dir-label"{% if e.excluded %} title="Исключено из индексации"{% endif %}>
+    <span class="arrow">▸</span> {{ e.name }}
+  </span>
+  {% if not e.excluded %}<ul class="children" hidden></ul>{% endif %}
+</li>
+{% else %}
+<li class="file kind-{{ e.kind }}{% if e.excluded %} excluded{% endif %}">
+  {% if e.kind in ("markdown", "text", "image") and not e.excluded %}
+  <a class="nav" href="/view?path={{ e.rel_path | urlencode }}">{{ e.name }}</a>
+  {% else %}
+  <span class="file-plain" title="Бинарный файл — просмотр недоступен">{{ e.name }}</span>
+  {% endif %}
+</li>
+{% endif %}
+{% else %}
+<li class="empty">пусто</li>
+{% endfor %}

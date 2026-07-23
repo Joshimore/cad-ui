@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block crumb %}Пространство{% endblock %}
+{% block page_h %}{{ page_title }}{% endblock %}
+{% block page_sub %}{{ page_sub }}{% endblock %}
+
+{% block content %}
+<div class="page-pad">
+  <section class="card">
+    {% include "_filelist.html" %}
+  </section>
+</div>
+{% endblock %}
