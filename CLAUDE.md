@@ -2,8 +2,6 @@
 
 You are working inside **CAD UI** — an isolated, self-contained agentic workspace with a local web UI on top of it. The repo is both the tool and the workspace: team members clone it, launch the UI, and do their work inside this folder. Everything is strictly local: the server binds `127.0.0.1` only, no API keys, no external calls, no CDNs.
 
-Plan and process docs live in the parent project: `ENVIRONMENT/PROJECTS/clients/03-cad-ui/`.
-
 ## How the pieces interact
 
 ```
@@ -27,7 +25,7 @@ A fresh clone is empty: no venv, no agents, no skills, an almost-blank UI. When 
 
 1. **Environment check:** if `.venv/` is missing — offer to create it and install deps:
    `python -m venv .venv` → `.venv\Scripts\pip install -r requirements.txt`
-   (needs Python 3.11+ with pip; on this machine beware of PATH pythons without pip).
+   (needs Python 3.11+ with pip; beware of PATH pythons shipped without pip, e.g. MSYS builds).
 2. **Launch the UI:** `.venv\Scripts\python run_ui.py` → opens `http://127.0.0.1:8145`. Options: `--port`, `--no-browser`, or an explicit workspace path (default = this folder).
 3. **Seed the registry:** if `.claude/agents/` and `.claude/skills/` are empty, tell the user the «Реестр» section is hidden for that reason and offer to scaffold their first agent/skill from the file contracts above, based on what they actually work on. Do not invent a default roster without asking.
 4. **Orient the user:** point them to the sections — Центр управления (dashboard), Документы (tree + markdown viewer), Недавние, Избранное — and explain that documents they create here appear in the UI immediately.
