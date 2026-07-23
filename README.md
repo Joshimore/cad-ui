@@ -17,7 +17,7 @@
 **Шаг 1. Склонируй репозиторий:**
 
 ```
-git clone <адрес-репозитория> cad-ui
+git clone https://github.com/Joshimore/cad-ui.git
 ```
 
 **Шаг 2. Запусти `start.bat`** (двойной клик по файлу в папке `cad-ui`).
