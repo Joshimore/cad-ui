@@ -47,8 +47,37 @@
       fetch("/api/favorite?path=" + encodeURIComponent(fav.dataset.path), { method: "POST" })
         .then((r) => r.json())
         .then((data) => fav.classList.toggle("on", data.favorite));
+      return;
+    }
+
+    /* ---------- Claude Launch ---------- */
+    const cl = e.target.closest("#claude-launch");
+    if (cl) {
+      cl.disabled = true;
+      fetch("/api/claude-launch", { method: "POST" })
+        .then(async (r) => {
+          if (r.ok) {
+            flashBtn(cl, "ok", ">_ запущен");
+          } else {
+            const data = await r.json().catch(() => ({}));
+            flashBtn(cl, "err", "ошибка");
+            if (data.detail) alert(data.detail);
+          }
+        })
+        .catch(() => flashBtn(cl, "err", "ошибка"))
+        .finally(() => { cl.disabled = false; });
     }
   });
+
+  function flashBtn(btn, cls, text) {
+    const orig = btn.textContent;
+    btn.classList.add(cls);
+    btn.textContent = text;
+    setTimeout(() => {
+      btn.classList.remove(cls);
+      btn.textContent = orig;
+    }, 2000);
+  }
 
   /* Swap strategy: if both the current page and the response contain #doc-view
      (Документы), swap only the viewer pane so the tree keeps its state.

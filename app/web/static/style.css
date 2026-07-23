@@ -150,6 +150,24 @@ body {
   margin-left: 6px;
   color: var(--dim);
 }
+.btn-claude {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #17110b;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.1s;
+}
+.btn-claude:hover { background: var(--accent-hi); }
+.btn-claude:active { transform: translateY(1px); }
+.btn-claude.ok { background: var(--green); }
+.btn-claude.err { background: #c2504f; color: #fff; }
+
 .local-badge {
   display: inline-flex;
   align-items: center;

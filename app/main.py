@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 from .adapters import agents_skills
 from .core import state as state_mod
+from .services import launcher
 from .core.config import WorkspaceConfig, load_config
 from .core.markdown import render_markdown
 from .core.scanner import (
@@ -161,6 +162,14 @@ def create_app(workspace_root: Path) -> FastAPI:
             raise HTTPException(status_code=404, detail="Not a directory")
         entries = list_dir(cfg, path)
         return templates.TemplateResponse(request, "_tree.html", {"entries": entries})
+
+    @app.post("/api/claude-launch")
+    def claude_launch():
+        try:
+            launcher.launch_claude(cfg)
+        except launcher.LaunchError as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+        return JSONResponse({"ok": True})
 
     @app.post("/api/favorite")
     def favorite_toggle(path: str = Query(...)):

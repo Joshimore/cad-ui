@@ -56,6 +56,7 @@ class WorkspaceConfig:
     root: Path
     excluded_dirs: set[str] = field(default_factory=lambda: set(DEFAULT_EXCLUDED_DIRS))
     excluded_extensions: set[str] = field(default_factory=lambda: set(DEFAULT_EXCLUDED_EXTENSIONS))
+    claude_command: str = "claude"
 
     def is_dir_excluded(self, name: str) -> bool:
         for pattern in self.excluded_dirs:
@@ -88,4 +89,6 @@ def load_config(root: Path) -> WorkspaceConfig:
         for ext in data.get("exclude_extensions", []):
             ext = str(ext).lower()
             cfg.excluded_extensions.add(ext if ext.startswith(".") else f".{ext}")
+        if isinstance(data.get("claude_command"), str) and data["claude_command"].strip():
+            cfg.claude_command = data["claude_command"].strip()
     return cfg

@@ -14,7 +14,7 @@ run_ui.py  ──►  app/main.py (FastAPI, port 8145)  ──►  browser UI (1
                     └─ app/web/       Jinja2 templates + vanilla JS (no external libs)
 ```
 
-- **The UI is the eyes, the terminal is the hands.** The web UI never executes commands — it only reads files and writes `.cad-ui/state.json` (favorites). All actual work (creating agents, skills, documents, code) is done by Claude Code in the terminal, in this folder. The UI picks up file changes on page refresh.
+- **The UI is the eyes, the terminal is the hands.** The web UI executes no arbitrary commands — it only reads files and writes `.cad-ui/state.json` (favorites). The single fixed exception is the «>_ Claude» button in the topbar: `POST /api/claude-launch` opens a terminal in the workspace root running the command from local config (`claude_command`, default `claude`) — the command is never taken from the HTTP request. Claude Code reads this `CLAUDE.md` on session start automatically, so a session launched from the button already understands the system. All actual work (creating agents, skills, documents, code) is done by Claude Code in the terminal; the UI picks up file changes on page refresh.
 - **Adapters are auto-detected.** If `.claude/agents/` or `.claude/skills/` contain valid files, the UI shows the «Реестр» section (Агенты / Навыки) automatically; if they are absent, the section is hidden. No configuration needed — creating the files IS the configuration.
 - **Registry file contracts:** an agent is `.claude/agents/<name>.md` with frontmatter `name`, `description`, `tools`; a skill is `.claude/skills/<skill-name>/SKILL.md` with frontmatter `name`, `description`. The UI reads exactly these fields.
 - **Personal vs shared:** `.claude/agents/` and `.claude/skills/` are **committed** (they are the system). `workspace.config.json` (personal exclusions, future webhooks), `.cad-ui/` (runtime state), and `.claude/settings.local.json` are **gitignored** — never commit them, never put secrets in tracked files.
@@ -23,10 +23,8 @@ run_ui.py  ──►  app/main.py (FastAPI, port 8145)  ──►  browser UI (1
 
 A fresh clone is empty: no venv, no agents, no skills, an almost-blank UI. When a user starts a session in this folder and the environment looks unprovisioned, proactively walk them through bootstrap (ask before each step, don't silently install):
 
-1. **Environment check:** if `.venv/` is missing — offer to create it and install deps:
-   `python -m venv .venv` → `.venv\Scripts\pip install -r requirements.txt`
-   (needs Python 3.11+ with pip; beware of PATH pythons shipped without pip, e.g. MSYS builds).
-2. **Launch the UI:** `.venv\Scripts\python run_ui.py` → opens `http://127.0.0.1:8145`. Options: `--port`, `--no-browser`, or an explicit workspace path (default = this folder).
+1. **Environment check:** if `.venv/` is missing — the simplest path is `start.bat` (creates the venv, installs deps, launches). Manual equivalent: `python -m venv .venv` → `.venv\Scripts\pip install -r requirements.txt` (needs Python 3.11+ with pip; beware of PATH pythons shipped without pip, e.g. MSYS builds).
+2. **Launch the UI:** `start.bat`, or `.venv\Scripts\python run_ui.py` → opens `http://127.0.0.1:8145`. Options: `--port`, `--no-browser`, or an explicit workspace path (default = this folder). To update the system later: `update.bat` (git pull + dependency sync), then restart.
 3. **Seed the registry:** if `.claude/agents/` and `.claude/skills/` are empty, tell the user the «Реестр» section is hidden for that reason and offer to scaffold their first agent/skill from the file contracts above, based on what they actually work on. Do not invent a default roster without asking.
 4. **Orient the user:** point them to the sections — Центр управления (dashboard), Документы (tree + markdown viewer), Недавние, Избранное — and explain that documents they create here appear in the UI immediately.
 
