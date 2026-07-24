@@ -65,7 +65,13 @@ def create_app(workspace_root: Path) -> FastAPI:
         if request.method == "POST" and request.url.path.startswith("/api/"):
             if request.headers.get("x-requested-with") != "cad-ui":
                 return JSONResponse({"detail": "CSRF check failed"}, status_code=403)
-        return await call_next(request)
+        response = await call_next(request)
+        # HTML pages carry the versioned (?v=) asset URLs; keep the HTML itself
+        # uncacheable so an updated ?v= after a restart always reaches the browser
+        # (otherwise a heuristically-cached page keeps loading stale JS/CSS).
+        if "text/html" in response.headers.get("content-type", ""):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
 
     # Ensure the team working directory exists so its panel and create buttons work.
     (cfg.root / projects.WORKDIR_NAME).mkdir(exist_ok=True)

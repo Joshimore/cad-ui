@@ -293,10 +293,15 @@
   }
   stage.addEventListener("pointermove", (ev) => {
     if (tip.hidden) return;
+    /* Clear the hover the moment the cursor is no longer over a node. The per-node
+       pointerleave can be missed (fast exit, pointer capture, gap between circle and
+       label), which left the tooltip stuck; this catch-all fixes that. */
+    if (!ev.target.closest(".gnode")) { setHover(null); return; }
     const r = stage.getBoundingClientRect();
     tip.style.left = (ev.clientX - r.left + 14) + "px";
     tip.style.top = (ev.clientY - r.top + 14) + "px";
   });
+  stage.addEventListener("pointerleave", () => setHover(null));  // left the graph area entirely
 
   /* ---------- drag node ---------- */
   function clientToWorld(ev) {

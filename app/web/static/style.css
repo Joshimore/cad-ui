@@ -25,6 +25,10 @@
 }
 
 * { box-sizing: border-box; }
+/* The `hidden` attribute must always hide — components set display:flex/block on the
+   same elements (.graph-tip, .create-form), which would otherwise beat the UA rule
+   and leave them permanently visible. */
+[hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
 body {
   font-family: var(--sans);
@@ -486,8 +490,8 @@ ul.filelist a.nav:hover .fl-name { color: var(--accent-hi); }
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
 }
-.reg-card { display: block; text-decoration: none; color: var(--text); transition: border-color 0.12s, transform 0.1s; }
-.reg-card:hover { border-color: rgba(194,65,12,0.35); transform: translateY(-1px); }
+.reg-card, .project-card { display: block; text-decoration: none; color: var(--text); transition: border-color 0.12s, transform 0.1s; }
+.reg-card:hover, .project-card:hover { border-color: rgba(194,65,12,0.35); transform: translateY(-1px); }
 .reg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .reg-badge {
   width: 30px; height: 30px;
@@ -880,17 +884,17 @@ li.empty, .empty { color: var(--faint); padding: 6px 8px; font-style: italic; }
 
 /* ============ theme: dark variant + smooth switch ============ */
 :root[data-theme="dark"] {
-  --bg: #17140f;
-  --bg-2: #1e1a14;
-  --panel: #211c15;
-  --panel-2: #272119;
-  --hover: #2f2820;
-  --border: #3b332a;
-  --border-soft: #2d2820;
-  --text: #ece5d8;
-  --dim: #a8a08d;
-  --faint: #746c5d;
-  --accent: #e0692f;
+  --bg: #12161d;          /* dark slate-blue base (was warm brown) */
+  --bg-2: #171c25;
+  --panel: #1a2029;
+  --panel-2: #1f2530;
+  --hover: #272e3a;
+  --border: #323a49;
+  --border-soft: #262d39;
+  --text: #e7eaf1;
+  --dim: #9aa3b2;
+  --faint: #6a7381;
+  --accent: #e0692f;      /* orange accent kept */
   --accent-hi: #f18a52;
   --accent-dim: rgba(224, 105, 47, 0.16);
   --green: #4faa6b;
@@ -901,7 +905,7 @@ li.empty, .empty { color: var(--faint); padding: 6px 8px; font-style: italic; }
 :root[data-theme="dark"] body {
   background:
     radial-gradient(1100px 500px at 85% -10%, rgba(224, 105, 47, 0.07), transparent 60%),
-    radial-gradient(800px 600px at -10% 110%, rgba(79, 170, 107, 0.05), transparent 60%),
+    radial-gradient(800px 600px at -10% 110%, rgba(90, 120, 170, 0.06), transparent 60%),
     var(--bg);
 }
 :root[data-theme="dark"] #graph-canvas {
