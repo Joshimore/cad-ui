@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block crumb %}Работа{% endblock %}
+{% block page_h %}Проекты{% endblock %}
+{% block page_sub %}Рабочая папка команды — Working directory{% endblock %}
+
+{% block content %}
+<div class="page-pad">
+
+  <div class="create-bar">
+    <button class="btn btn-primary" id="new-project-toggle">＋ Новый проект</button>
+    <form class="create-form" id="new-project-form" hidden>
+      <input type="text" name="name" placeholder="Название проекта" autocomplete="off" required>
+      <input type="text" name="description" placeholder="Короткое описание (необязательно)" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Создать</button>
+    </form>
+  </div>
+
+  {% if projects %}
+  <div class="registry-grid">
+    {% for p in projects %}
+    <a class="card project-card nav" href="/project?slug={{ p.slug | urlencode }}">
+      <div class="reg-head">
+        <span class="reg-badge">▤</span>
+        <span class="reg-name">{{ p.name }}</span>
+        <span class="state-badge state-{{ p.status }}">{{ p.status }}</span>
+      </div>
+      {% if p.description %}<p class="reg-desc">{{ p.description }}</p>{% endif %}
+      <div class="project-metrics">
+        <span>{{ p.task_count }} задач</span>
+        <span>{{ p.active_count }} активных</span>
+        {% if p.overdue_count %}<span class="over">{{ p.overdue_count }} просрочено</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <section class="card"><p class="empty">Пока нет проектов. Нажми «＋ Новый проект», чтобы создать первый.</p></section>
+  {% endif %}
+
+</div>
+{% endblock %}

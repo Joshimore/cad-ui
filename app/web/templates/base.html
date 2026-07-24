@@ -37,6 +37,15 @@
       </a>
     </div>
 
+    {% if has_work_panel %}
+    <div class="nav-section">
+      <div class="nav-label">Работа</div>
+      <a class="nav-item{% if nav == 'projects' %} active{% endif %}" href="/projects">
+        <span class="ni-ico">▤</span> Проекты
+      </a>
+    </div>
+    {% endif %}
+
     {% if has_agents_panel %}
     <div class="nav-section">
       <div class="nav-label">Реестр</div>

@@ -78,20 +78,93 @@
         .then(() => navigate(location.pathname + location.search, false))
         .catch(() => {})
         .finally(() => { ri.disabled = false; });
+      return;
+    }
+
+    /* ---------- create-form toggles ---------- */
+    const tgl = e.target.closest("#new-project-toggle, #new-task-toggle");
+    if (tgl) {
+      const form = tgl.parentElement.querySelector(".create-form");
+      if (form) {
+        form.hidden = !form.hidden;
+        if (!form.hidden) { const f = form.querySelector("input, textarea"); if (f) f.focus(); }
+      }
+      return;
+    }
+
+    /* ---------- project status change ---------- */
+    const so = e.target.closest(".status-opt");
+    if (so && !so.classList.contains("on")) {
+      const seg = so.closest(".status-seg");
+      apiPost("/api/project/status", { slug: seg.dataset.slug, status: so.dataset.status })
+        .then((r) => { if (r.ok) navigate(location.pathname + location.search, false); });
     }
   });
 
-  /* ---------- search form → SPA navigation ---------- */
-  document.addEventListener("submit", function (e) {
-    const form = e.target.closest("#search-form");
-    if (!form) return;
-    e.preventDefault();
-    const q = (form.querySelector('input[name="q"]').value || "").trim();
-    navigate("/search?q=" + encodeURIComponent(q), true);
+  /* ---------- project colour picker ---------- */
+  document.addEventListener("change", function (e) {
+    const ci = e.target.closest("#project-color");
+    if (!ci) return;
+    apiPost("/api/project/color", { slug: ci.dataset.slug, color: ci.value })
+      .then((r) => { if (r.ok) navigate(location.pathname + location.search, false); });
   });
 
-  function apiPost(url) {
-    return fetch(url, { method: "POST", headers: { "X-Requested-With": "cad-ui" } });
+  /* ---------- forms → SPA / create actions ---------- */
+  document.addEventListener("submit", function (e) {
+    const search = e.target.closest("#search-form");
+    if (search) {
+      e.preventDefault();
+      const q = (search.querySelector('input[name="q"]').value || "").trim();
+      navigate("/search?q=" + encodeURIComponent(q), true);
+      return;
+    }
+
+    const proj = e.target.closest("#new-project-form");
+    if (proj) {
+      e.preventDefault();
+      submitCreate(proj, "/api/project/create", {
+        name: proj.name.value, description: proj.description.value,
+      }, (data) => "/project?slug=" + encodeURIComponent(data.slug));
+      return;
+    }
+
+    const task = e.target.closest("#new-task-form");
+    if (task) {
+      e.preventDefault();
+      submitCreate(task, "/api/task/create", {
+        project: task.dataset.project, name: task.name.value,
+        goal: task.goal.value, steps: task.steps.value,
+        started: task.started.value, due: task.due.value,
+      }, () => "/project?slug=" + encodeURIComponent(task.dataset.project));
+      return;
+    }
+  });
+
+  async function submitCreate(form, url, body, nextUrl) {
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+    try {
+      const r = await apiPost(url, body);
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) {
+        navigate(nextUrl(data), true);
+      } else {
+        alert(data.detail || "Не удалось создать.");
+      }
+    } catch (_) {
+      alert("Ошибка сети.");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function apiPost(url, body) {
+    const opts = { method: "POST", headers: { "X-Requested-With": "cad-ui" } };
+    if (body !== undefined) {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(url, opts);
   }
 
   function flashBtn(btn, cls, text) {

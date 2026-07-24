@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — CAD UI{% endblock %}
+{% block crumb %}Работа · Проекты{% endblock %}
+{% block page_h %}{{ project.name }}{% endblock %}
+{% block page_sub %}{{ project.description }}{% endblock %}
+
+{% block content %}
+<div class="page-pad">
+
+  {% set status_ru = {"active": "Активен", "done": "Завершён", "frozen": "Заморожен"} %}
+  <div class="project-head">
+    <span class="status-label">Статус:</span>
+    <div class="status-seg" data-slug="{{ project.slug }}">
+      {% for s in statuses %}
+      <button class="status-opt{% if project.status == s %} on state-{{ s }}{% endif %}"
+              data-status="{{ s }}">{{ status_ru[s] }}</button>
+      {% endfor %}
+    </div>
+    <label class="color-field" title="Цвет проекта на календаре">
+      <span class="legend-swatch" style="background:{{ project.color }}"></span>
+      Цвет
+      <input type="color" id="project-color" data-slug="{{ project.slug }}" value="{{ project.color }}">
+    </label>
+    {% if project.due %}<span class="due-pill">дедлайн проекта: {{ project.due }}</span>{% endif %}
+    {% if project.rel_md %}<a class="card-link nav" href="/view?path={{ project.rel_md | urlencode }}">project.md ↗</a>{% endif %}
+  </div>
+
+  <div class="create-bar">
+    <button class="btn btn-primary" id="new-task-toggle">＋ Новая задача</button>
+    <form class="create-form" id="new-task-form" data-project="{{ project.slug }}" hidden>
+      <input type="text" name="name" placeholder="Название задачи" autocomplete="off" required>
+      <input type="text" name="goal" placeholder="Цель (необязательно)" autocomplete="off">
+      <textarea name="steps" placeholder="Шаги плана — по одному на строку" rows="3"></textarea>
+      <label class="due-field">Начало <input type="date" name="started" value="{{ today }}"></label>
+      <label class="due-field">Дедлайн <input type="date" name="due"></label>
+      <button type="submit" class="btn btn-primary">Создать</button>
+    </form>
+  </div>
+
+  {% if tasks %}
+  <ul class="task-list">
+    {% for t in tasks %}
+    <li class="task-row{% if t.state == 'done' %} done{% endif %}">
+      <a class="nav task-main" href="/view?path={{ t.rel_md | urlencode }}">
+        <span class="task-name">{{ t.name }}{% if t.is_active %} <span class="active-dot" title="Активная задача">●</span>{% endif %}</span>
+        {% if t.goal %}<span class="task-goal">{{ t.goal }}</span>{% endif %}
+      </a>
+      <span class="task-meta">
+        <span class="state-badge state-{{ t.state }}">{{ t.state }}</span>
+        {% if t.has_draft %}<span class="draft-flag" title="Есть неотправленный черновик">✎ черновик</span>{% endif %}
+        {% if t.due %}<span class="due-pill">{{ t.due }}</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <section class="card"><p class="empty">В проекте пока нет задач. Нажми «＋ Новая задача».</p></section>
+  {% endif %}
+
+</div>
+{% endblock %}

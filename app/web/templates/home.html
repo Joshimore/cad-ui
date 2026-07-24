@@ -6,61 +6,134 @@
 {% block content %}
 <div class="home-grid">
 
-  <section class="card hero">
+  <section class="card hero hero-slim">
     <div class="hero-left">
       <div class="card-label">Центр управления · рабочее пространство</div>
-      <h2 class="hero-title">Документы, агенты,<br>задачи — <em>одна<br>система.</em></h2>
-      <p class="hero-note">Дерево, markdown, реестр агентов и навыков — всё локально.
-        Единственное действие браузера — кнопка запуска Claude в терминале.</p>
+      <h2 class="hero-title">Документы, агенты, задачи — <em>одна система.</em></h2>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="/docs">◫ Открыть документы</a>
-        <a class="btn btn-ghost" href="/recent">◷ Недавние</a>
+        <a class="btn btn-primary" href="/projects">▤ Проекты</a>
+        <a class="btn btn-ghost" href="/docs">◫ Документы</a>
       </div>
     </div>
     <div class="hero-orbit" aria-hidden="true">
       <div class="orbit o1"></div>
       <div class="orbit o2"></div>
-      <div class="orbit o3"></div>
       <div class="orbit-core">OS</div>
       <span class="planet p1"></span>
       <span class="planet p2"></span>
       <span class="planet p3"></span>
-      <span class="planet p4"></span>
-      <span class="planet p5"></span>
     </div>
   </section>
 
-  <section class="card side-card">
-    <div class="card-label">Состояние</div>
-    <h3 class="side-title">Всё в порядке <span class="ok-mark">✓</span></h3>
-    <ul class="stat-rows">
-      <li>
-        <span class="stat-ico i-orange">◷</span>
-        <span class="stat-text">Недавние документы<span class="stat-sub">изменения в пространстве</span></span>
-        <span class="stat-num">{{ recent_count }}</span>
-      </li>
-      <li>
-        <span class="stat-ico i-violet">⬡</span>
-        <span class="stat-text">Агенты<span class="stat-sub">.claude/agents</span></span>
-        <span class="stat-num">{{ agent_count }}</span>
-      </li>
-      <li>
-        <span class="stat-ico i-green">✦</span>
-        <span class="stat-text">Навыки<span class="stat-sub">.claude/skills</span></span>
-        <span class="stat-num">{{ skill_count }}</span>
-      </li>
-      <li>
-        <span class="stat-ico i-gold">★</span>
-        <span class="stat-text">Избранное<span class="stat-sub">закреплённые файлы</span></span>
-        <span class="stat-num">{{ fav_count }}</span>
-      </li>
-    </ul>
+  <div class="stats-row">
+    <section class="card">
+      <div class="card-label">Работа</div>
+      <h3 class="side-title">Проекты и задачи</h3>
+      <ul class="stat-rows">
+        <li>
+          <span class="stat-ico i-orange">▤</span>
+          <span class="stat-text">Проекты<span class="stat-sub">Working directory</span></span>
+          <span class="stat-num">{{ work.projects }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-violet">◨</span>
+          <span class="stat-text">Задачи<span class="stat-sub">всего в проектах</span></span>
+          <span class="stat-num">{{ work.tasks }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-green">◔</span>
+          <span class="stat-text">Активные<span class="stat-sub">не завершённые</span></span>
+          <span class="stat-num">{{ work.active }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-green">✓</span>
+          <span class="stat-text">Завершённые<span class="stat-sub">state: done</span></span>
+          <span class="stat-num">{{ work.done }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-label">Состояние</div>
+      <h3 class="side-title">Пространство</h3>
+      <ul class="stat-rows">
+        <li>
+          <span class="stat-ico i-orange">◷</span>
+          <span class="stat-text">Недавние<span class="stat-sub">изменённые документы</span></span>
+          <span class="stat-num">{{ recent_count }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-violet">⬡</span>
+          <span class="stat-text">Агенты<span class="stat-sub">.claude/agents</span></span>
+          <span class="stat-num">{{ agent_count }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-green">✦</span>
+          <span class="stat-text">Навыки<span class="stat-sub">.claude/skills</span></span>
+          <span class="stat-num">{{ skill_count }}</span>
+        </li>
+        <li>
+          <span class="stat-ico i-gold">★</span>
+          <span class="stat-text">Избранное<span class="stat-sub">закреплённые файлы</span></span>
+          <span class="stat-num">{{ fav_count }}</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card wide-card">
+    <div class="card-head">
+      <div class="card-label">Сроки задач</div>
+      <a class="card-link nav" href="/projects">Открыть проекты ↗</a>
+    </div>
+    <h3 class="side-title">Таймлайн дедлайнов</h3>
+    {% if timeline.has_data %}
+    <div class="cal">
+      <div class="cal-head">
+        {% for d in timeline.days %}
+        <div class="cal-daycol{% if d.is_weekend %} weekend{% endif %}{% if d.is_today %} today{% endif %}"
+             style="left:{{ d.left }}%; width:{{ d.width }}%">
+          {% if d.month %}<span class="cal-month">{{ d.month }}</span>{% endif %}
+          <span class="cal-num">{{ d.num }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="cal-body">
+        {% for d in timeline.days %}
+        <span class="cal-col{% if d.is_weekend %} weekend{% endif %}" style="left:{{ d.left }}%; width:{{ d.width }}%"></span>
+        {% endfor %}
+        {% if timeline.today_left >= 0 %}<span class="cal-today-line" style="left:{{ timeline.today_left }}%"></span>{% endif %}
+        {% for r in timeline.rows %}
+        <div class="cal-row">
+          <div class="cal-bar u-{{ r.urgency }}" style="left:{{ r.left }}%; width:{{ r.width }}%; --bar:{{ r.color }}">
+            <span class="cal-bar-label">{% if r.urgency == 'overdue' %}⚠ {% endif %}{{ r.task.name }}</span>
+            <span class="tl-tip">
+              <b>{{ r.task.name }}</b><br>
+              проект: {{ r.task.project_name }}<br>
+              {% if r.task.started %}{{ r.task.started }} → {% endif %}{{ r.task.due }} · {{ r.task.state }}
+              {% if r.task.goal %}<br>{{ r.task.goal }}{% endif %}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% if timeline.legend %}
+    <div class="cal-legend">
+      {% for l in timeline.legend %}
+      <span class="legend-item"><span class="legend-swatch" style="background:{{ l.color }}"></span>{{ l.name }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="empty">Нет задач с дедлайнами. Задай дедлайн при создании задачи — он появится здесь.</p>
+    {% endif %}
   </section>
 
   <section class="card wide-card">
     <div class="card-head">
       <div class="card-label">Состояние работы</div>
-      <a class="card-link" href="/recent">Открыть все ↗</a>
+      <a class="card-link nav" href="/recent">Открыть все ↗</a>
     </div>
     <h3 class="side-title">Недавние изменения</h3>
     {% with items = recents, empty_text = "Пока пусто" %}{% include "_filelist.html" %}{% endwith %}

@@ -10,7 +10,10 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from fastapi import Body
+
 from .adapters import agents_skills
+from .adapters import projects
 from .core import index
 from .core import state as state_mod
 from .services import launcher
@@ -49,6 +52,9 @@ def create_app(workspace_root: Path) -> FastAPI:
                 return JSONResponse({"detail": "CSRF check failed"}, status_code=403)
         return await call_next(request)
 
+    # Ensure the team working directory exists so its panel and create buttons work.
+    (cfg.root / projects.WORKDIR_NAME).mkdir(exist_ok=True)
+
     # Build the search index in the background so startup is not blocked.
     threading.Thread(target=index.build, args=(cfg,), daemon=True).start()
 
@@ -66,6 +72,7 @@ def create_app(workspace_root: Path) -> FastAPI:
             "workspace": str(cfg.root),
             "workspace_name": cfg.root.name,
             "has_agents_panel": agents_skills.detect(cfg),
+            "has_work_panel": projects.detect(cfg),
             "nav": nav,
             "fav_count": len(state_mod.load_favorites(cfg)),
         }
@@ -86,6 +93,8 @@ def create_app(workspace_root: Path) -> FastAPI:
             "agent_count": len(agents),
             "skill_count": len(skills),
             "recent_count": len(recents),
+            "work": projects.work_stats(cfg),
+            "timeline": projects.timeline(cfg),
         })
 
     @app.get("/docs", response_class=HTMLResponse)
@@ -191,6 +200,63 @@ def create_app(workspace_root: Path) -> FastAPI:
             "items": agents_skills.list_skills(cfg),
             "empty_text": "В .claude/skills пока пусто",
         })
+
+    @app.get("/projects", response_class=HTMLResponse)
+    def projects_page(request: Request):
+        return templates.TemplateResponse(request, "projects.html", {
+            **base_ctx("projects"),
+            "projects": projects.list_projects(cfg),
+        })
+
+    @app.get("/project", response_class=HTMLResponse)
+    def project_page(request: Request, slug: str = Query(...)):
+        items = projects.list_projects(cfg)
+        proj = next((p for p in items if p.slug == slug), None)
+        if proj is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return templates.TemplateResponse(request, "project.html", {
+            **base_ctx("projects"),
+            "project": proj,
+            "tasks": projects.list_tasks(cfg, slug),
+            "today": datetime.date.today().isoformat(),
+            "statuses": projects.PROJECT_STATUSES,
+        })
+
+    @app.post("/api/project/create")
+    def project_create(payload: dict = Body(...)):
+        try:
+            slug = projects.create_project(cfg, payload.get("name", ""),
+                                           payload.get("description", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return JSONResponse({"ok": True, "slug": slug})
+
+    @app.post("/api/task/create")
+    def task_create(payload: dict = Body(...)):
+        try:
+            slug = projects.create_task(
+                cfg, payload.get("project", ""), payload.get("name", ""),
+                payload.get("goal", ""), payload.get("steps", ""),
+                payload.get("due", ""), payload.get("started", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return JSONResponse({"ok": True, "slug": slug})
+
+    @app.post("/api/project/status")
+    def project_status(payload: dict = Body(...)):
+        try:
+            projects.set_project_status(cfg, payload.get("slug", ""), payload.get("status", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return JSONResponse({"ok": True})
+
+    @app.post("/api/project/color")
+    def project_color(payload: dict = Body(...)):
+        try:
+            projects.set_project_color(cfg, payload.get("slug", ""), payload.get("color", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return JSONResponse({"ok": True})
 
     # ---------- api ----------
 
