@@ -95,6 +95,10 @@
     /* ---------- theme toggle ---------- */
     if (e.target.closest("#theme-toggle")) { toggleTheme(); return; }
 
+    /* ---------- knowledge-base trust-level filter ---------- */
+    const kf = e.target.closest(".kb-filter");
+    if (kf) { kf.classList.toggle("on"); applyKbFilters(); return; }
+
     /* ---------- open document editor ---------- */
     const ed = e.target.closest("#doc-edit");
     if (ed) { openEditor(ed); return; }
@@ -307,6 +311,20 @@
     btn.title = theme === "dark" ? "Светлая тема" : "Тёмная тема";
   }
   updateThemeToggle(document.documentElement.dataset.theme || "light");
+
+  /* ---------- knowledge-base filter: hide cards whose trust level is toggled off ---------- */
+  function applyKbFilters() {
+    const off = new Set();
+    document.querySelectorAll(".kb-filter:not(.on)").forEach((b) => off.add(b.dataset.trust));
+    let shown = 0;
+    document.querySelectorAll(".kb-card").forEach((c) => {
+      const hide = off.has(c.dataset.trust);   // cards with no trust level are never hidden
+      c.hidden = hide;
+      if (!hide) shown++;
+    });
+    const empty = document.getElementById("kb-empty");
+    if (empty) empty.hidden = shown > 0;
+  }
 
   window.addEventListener("popstate", function () {
     navigate(location.pathname + location.search, false);

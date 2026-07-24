@@ -14,6 +14,7 @@ from fastapi import Body
 
 from . import __version__
 from .adapters import agents_skills
+from .adapters import knowledge_base
 from .adapters import projects
 from .core import graph
 from .core import index
@@ -75,6 +76,8 @@ def create_app(workspace_root: Path) -> FastAPI:
 
     # Ensure the team working directory exists so its panel and create buttons work.
     (cfg.root / projects.WORKDIR_NAME).mkdir(exist_ok=True)
+    # Knowledge-base skeleton — same shared-folder / local-contents model as above.
+    (cfg.root / knowledge_base.KB_DIRNAME).mkdir(exist_ok=True)
 
     # Build the search index in the background so startup is not blocked.
     threading.Thread(target=index.build, args=(cfg,), daemon=True).start()
@@ -94,6 +97,7 @@ def create_app(workspace_root: Path) -> FastAPI:
             "workspace_name": cfg.root.name,
             "has_agents_panel": agents_skills.detect(cfg),
             "has_work_panel": projects.detect(cfg),
+            "has_kb_panel": knowledge_base.detect(cfg),
             "nav": nav,
             "fav_count": len(state_mod.load_favorites(cfg)),
             "version": __version__,
@@ -237,6 +241,14 @@ def create_app(workspace_root: Path) -> FastAPI:
         return templates.TemplateResponse(request, "projects.html", {
             **base_ctx("projects"),
             "projects": projects.list_projects(cfg),
+        })
+
+    @app.get("/knowledge", response_class=HTMLResponse)
+    def knowledge_page(request: Request):
+        return templates.TemplateResponse(request, "knowledge.html", {
+            **base_ctx("knowledge"),
+            "cards": knowledge_base.list_cards(cfg),
+            "kb_stats": knowledge_base.stats(cfg),
         })
 
     @app.get("/project", response_class=HTMLResponse)

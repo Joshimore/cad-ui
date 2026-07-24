@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}База знаний — CAD UI{% endblock %}
+{% block crumb %}Знания{% endblock %}
+{% block page_h %}База знаний{% endblock %}
+{% block page_sub %}Проверенные карточки — уровень доверия L0–L5 и версия ПО{% endblock %}
+
+{% block content %}
+<div class="page-pad">
+  <div class="kb-stats">
+    <span>Карточек: <b>{{ kb_stats.cards }}</b></span>
+    <span>Анти-паттернов: <b>{{ kb_stats.anti }}</b></span>
+    {% if kb_stats.stale %}<span class="kb-stale-count">Устарело: <b>{{ kb_stats.stale }}</b></span>{% endif %}
+  </div>
+
+  {% if cards %}
+  <div class="kb-filters">
+    <span class="kb-filters-label">Уровень</span>
+    {% for lvl in ["L5", "L4", "L3", "L2", "L1"] %}
+    <button class="kb-filter trust-badge {{ lvl }} on" data-trust="{{ lvl }}">{{ lvl }} · {{ kb_stats.by_trust[lvl] }}</button>
+    {% endfor %}
+  </div>
+  <div class="registry-grid">
+    {% for c in cards %}
+    <a class="card kb-card nav k-{{ c.kind }}{% if c.stale %} stale{% endif %}"
+       data-trust="{{ c.trust }}" href="/view?path={{ c.rel_path | urlencode }}">
+      <div class="kb-head">
+        {% if c.trust %}<span class="trust-badge {{ c.trust }}">{{ c.trust }}</span>{% endif %}
+        {% if c.kind == 'anti-pattern' %}<span class="kb-kind">⚠ анти-паттерн</span>{% endif %}
+        {% if c.stale %}<span class="kb-flag">версия устарела</span>{% endif %}
+      </div>
+      <span class="kb-title">{{ c.title }}</span>
+      {% if c.version %}<div class="kb-version">⌬ {{ c.version }}</div>{% endif %}
+      {% if c.tags %}<div class="kb-tags">{% for t in c.tags %}<span class="kb-tag">{{ t }}</span>{% endfor %}</div>{% endif %}
+      <div class="reg-path">{{ c.rel_path }}</div>
+    </a>
+    {% endfor %}
+  </div>
+  <p class="empty" id="kb-empty" hidden>Ни одна карточка не подходит под выбранные уровни.</p>
+  {% else %}
+  <section class="card"><p class="empty">В <code>knowledge-base/</code> пока нет карточек. Добавь .md-файл с frontmatter (title, trust, version) — панель наполнится.</p></section>
+  {% endif %}
+</div>
+{% endblock %}

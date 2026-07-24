@@ -60,6 +60,15 @@
     </div>
     {% endif %}
 
+    {% if has_kb_panel %}
+    <div class="nav-section">
+      <div class="nav-label">Знания</div>
+      <a class="nav-item{% if nav == 'knowledge' %} active{% endif %}" href="/knowledge">
+        <span class="ni-ico">◆</span> База знаний
+      </a>
+    </div>
+    {% endif %}
+
     {% if has_agents_panel %}
     <div class="nav-section">
       <div class="nav-label">Реестр</div>
