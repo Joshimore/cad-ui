@@ -12,6 +12,11 @@ if not exist ".venv\Scripts\python.exe" (
         pause
         exit /b 1
     )
+)
+
+rem Install deps until they succeed. The marker is written only after a clean
+rem install, so a failed/interrupted first run retries instead of wedging.
+if not exist ".venv\.deps-ok" (
     echo [CAD UI] Installing dependencies...
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
     if errorlevel 1 (
@@ -21,6 +26,7 @@ if not exist ".venv\Scripts\python.exe" (
         pause
         exit /b 1
     )
+    echo ok> ".venv\.deps-ok"
 )
 
 echo [CAD UI] Starting... browser will open at http://127.0.0.1:8145

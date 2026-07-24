@@ -25,6 +25,7 @@ from .core.scanner import (
 
 APP_DIR = Path(__file__).parent
 MAX_TEXT_BYTES = 2 * 1024 * 1024  # refuse to render text files above 2 MB
+ALLOWED_HOSTS = {"127.0.0.1", "localhost"}  # reject other Host headers (DNS rebinding)
 
 
 def create_app(workspace_root: Path) -> FastAPI:
@@ -32,6 +33,19 @@ def create_app(workspace_root: Path) -> FastAPI:
     app = FastAPI(title="CAD UI", docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory=APP_DIR / "web" / "static"), name="static")
     templates = Jinja2Templates(directory=APP_DIR / "web" / "templates")
+
+    @app.middleware("http")
+    async def security_guard(request: Request, call_next):
+        # Block DNS-rebinding: a remote page keeps its own hostname in Host.
+        host = (request.headers.get("host") or "").split(":")[0]
+        if host and host not in ALLOWED_HOSTS:
+            return JSONResponse({"detail": "Host not allowed"}, status_code=403)
+        # Block cross-origin CSRF on state-changing endpoints: cross-site forms
+        # and no-cors fetches cannot set a custom request header.
+        if request.method == "POST" and request.url.path.startswith("/api/"):
+            if request.headers.get("x-requested-with") != "cad-ui":
+                return JSONResponse({"detail": "CSRF check failed"}, status_code=403)
+        return await call_next(request)
 
     def guard(rel_path: str) -> Path:
         try:
@@ -165,8 +179,9 @@ def create_app(workspace_root: Path) -> FastAPI:
 
     @app.post("/api/claude-launch")
     def claude_launch():
+        # Reload config so an edited claude_command applies without a restart.
         try:
-            launcher.launch_claude(cfg)
+            launcher.launch_claude(load_config(cfg.root))
         except launcher.LaunchError as exc:
             raise HTTPException(status_code=500, detail=str(exc))
         return JSONResponse({"ok": True})

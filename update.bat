@@ -16,6 +16,15 @@ if errorlevel 1 (
 if exist ".venv\Scripts\python.exe" (
     echo [CAD UI] Syncing dependencies...
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt -q
+    if errorlevel 1 (
+        echo.
+        echo [CAD UI] ERROR: dependency sync failed. See output above.
+        echo The code is updated but dependencies are stale - fix the error, then rerun update.bat.
+        if exist ".venv\.deps-ok" del ".venv\.deps-ok"
+        pause
+        exit /b 1
+    )
+    echo ok> ".venv\.deps-ok"
 )
 
 echo.

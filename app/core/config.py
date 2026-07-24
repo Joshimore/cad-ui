@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -75,6 +76,10 @@ class WorkspaceConfig:
         return self.root / STATE_DIRNAME
 
 
+# The cad-ui repository root (this file is app/core/config.py).
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
 def load_config(root: Path) -> WorkspaceConfig:
     """Build config for a workspace root, merging workspace.config.json if present."""
     cfg = WorkspaceConfig(root=root.resolve())
@@ -82,13 +87,27 @@ def load_config(root: Path) -> WorkspaceConfig:
     if config_path.is_file():
         try:
             data = json.loads(config_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return cfg  # a broken config must not prevent startup
+        except (json.JSONDecodeError, OSError) as exc:
+            # A broken config must not prevent startup, but the user must know
+            # their settings were ignored rather than silently applied.
+            print(f"[CAD UI] WARNING: ignoring {config_path}: {exc}", file=sys.stderr)
+            return cfg
         for name in data.get("exclude_dirs", []):
             cfg.excluded_dirs.add(str(name))
         for ext in data.get("exclude_extensions", []):
             ext = str(ext).lower()
             cfg.excluded_extensions.add(ext if ext.startswith(".") else f".{ext}")
-        if isinstance(data.get("claude_command"), str) and data["claude_command"].strip():
-            cfg.claude_command = data["claude_command"].strip()
+        # claude_command is executed in a terminal, so it is trusted ONLY when it
+        # comes from the cad-ui repo's own config (isolated mode). A config file
+        # inside an arbitrary opened workspace is untrusted data — ignore its
+        # command and keep the default so a hostile workspace cannot run code.
+        if cfg.root == REPO_ROOT:
+            if isinstance(data.get("claude_command"), str) and data["claude_command"].strip():
+                cfg.claude_command = data["claude_command"].strip()
+        elif data.get("claude_command"):
+            print(
+                "[CAD UI] WARNING: ignoring 'claude_command' from a non-repo "
+                f"workspace config ({config_path}) for security.",
+                file=sys.stderr,
+            )
     return cfg

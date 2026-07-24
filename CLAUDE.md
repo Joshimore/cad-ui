@@ -25,13 +25,13 @@ A fresh clone is empty: no venv, no agents, no skills, an almost-blank UI. When 
 
 1. **Environment check:** if `.venv/` is missing — the simplest path is `start.bat` (creates the venv, installs deps, launches). Manual equivalent: `python -m venv .venv` → `.venv\Scripts\pip install -r requirements.txt` (needs Python 3.11+ with pip; beware of PATH pythons shipped without pip, e.g. MSYS builds).
 2. **Launch the UI:** `start.bat`, or `.venv\Scripts\python run_ui.py` → opens `http://127.0.0.1:8145`. Options: `--port`, `--no-browser`, or an explicit workspace path (default = this folder). To update the system later: `update.bat` (git pull + dependency sync), then restart.
-3. **Seed the registry:** if `.claude/agents/` and `.claude/skills/` are empty, tell the user the «Реестр» section is hidden for that reason and offer to scaffold their first agent/skill from the file contracts above, based on what they actually work on. Do not invent a default roster without asking.
+3. **Seed the registry:** the repo ships a small starter roster in `.claude/agents/` (creator, repo-searcher, registrar) so «Реестр» is populated on a fresh clone — these are examples, safe to edit or delete. If a user works in a domain they don't cover, offer to scaffold a tailored agent/skill from the file contracts above. If the user clears `.claude/agents/` and `.claude/skills/`, the «Реестр» section hides itself automatically.
 4. **Orient the user:** point them to the sections — Центр управления (dashboard), Документы (tree + markdown viewer), Недавние, Избранное — and explain that documents they create here appear in the UI immediately.
 
 ## Conventions for changes
 
-- Roadmap (do not implement ahead of it without being asked): phase 2 — search + auto-tagging; then tracks adapter, «Новая задача» wizard + Discord + Claude Launch; then knowledge base + graph. The «Поиск» pill in the topbar is intentionally a stub until phase 2.
+- Roadmap (do not implement ahead of it without being asked): phase 2 — search + auto-tagging; then tracks adapter, «Новая задача» wizard + Discord; then knowledge base + graph. Claude Launch already shipped (the `>_ Claude` button). The «Поиск» pill in the topbar is intentionally a stub until phase 2.
 - Keep it dependency-light: vanilla JS only, no CDN/external assets; new Python deps go to `requirements.txt` with a reason.
 - New panels are adapters (`app/adapters/`, pattern: `detect() → parse data → page route + template`), never hardcoded into the core.
-- UI style: terminal-noir theme in `app/web/static/style.css` — dark warm background, orange accent, mono labels. Match it.
+- UI style: "engineer's notebook" theme in `app/web/static/style.css` — light paper background, burnt-orange accent, mono labels. All colors come from the `:root` CSS variables; never hardcode theme colors in templates. Match it.
 - UI text is Russian; code, comments, and this file are English.
