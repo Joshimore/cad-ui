@@ -119,6 +119,28 @@
   </div>
 
 </div>
+
+{# First-run onboarding overlay. Lives OUTSIDE #content so SPA navigation never
+   removes it. Hidden by default; app.js reveals it on a full page load unless the
+   user chose «Больше не напоминать» (localStorage cadui-onboarded=1). #}
+<div class="onboard-overlay" id="onboard" hidden>
+  <div class="onboard-card">
+    <div class="onboard-badge">&gt;_</div>
+    <h2>Добро пожаловать в CAD UI</h2>
+    <p class="onboard-lead">Чтобы рабочий процесс заработал правильно, настрой среду один раз — проще всего с помощью Claude.</p>
+    <ol class="onboard-steps">
+      <li>Нажми <b>«&gt;_ Claude»</b> вверху справа <span class="onboard-point">↗</span> — откроется терминал прямо в этой папке.</li>
+      <li>Напиши ему: <span class="onboard-cmd">«прочитай INSTRUCTION.md и помоги настроить среду»</span>.</li>
+      <li>Claude проверит зависимости, объяснит структуру и настроит агентов/навыки под тебя.</li>
+    </ol>
+    <button class="btn btn-primary onboard-open" id="onboard-open" type="button">Открыть INSTRUCTION.md</button>
+    <div class="onboard-actions">
+      <button class="btn btn-ghost" id="onboard-close" type="button">Понятно</button>
+      <button class="btn-link" id="onboard-never" type="button">Больше не напоминать</button>
+    </div>
+  </div>
+</div>
+
 <script src="/static/app.js?v={{ asset_ver }}"></script>
 {# Per-page scripts. These execute ONLY on a full page load: app.js's SPA navigate()
    swaps #content in place and never runs injected <script> tags. So any link to a

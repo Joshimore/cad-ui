@@ -95,6 +95,16 @@
     /* ---------- theme toggle ---------- */
     if (e.target.closest("#theme-toggle")) { toggleTheme(); return; }
 
+    /* ---------- first-run onboarding overlay ---------- */
+    if (e.target.closest("#onboard-never")) { hideOnboard(true); return; }
+    if (e.target.closest("#onboard-close")) { hideOnboard(false); return; }
+    if (e.target.closest("#onboard-open")) {
+      hideOnboard(false);
+      navigate("/view?path=INSTRUCTION.md", true);
+      return;
+    }
+    if (e.target.id === "onboard") { hideOnboard(false); return; }  // click on the backdrop
+
     /* ---------- knowledge-base trust-level filter ---------- */
     const kf = e.target.closest(".kb-filter");
     if (kf) { kf.classList.toggle("on"); applyKbFilters(); return; }
@@ -312,6 +322,27 @@
   }
   updateThemeToggle(document.documentElement.dataset.theme || "light");
 
+  /* ---------- first-run onboarding overlay ---------- */
+  function showOnboard() {
+    const ov = document.getElementById("onboard");
+    if (!ov) return;
+    ov.hidden = false;
+    const btn = document.getElementById("claude-launch");
+    if (btn) btn.classList.add("pulse");  // draw the eye to the real button
+  }
+  function hideOnboard(permanent) {
+    const ov = document.getElementById("onboard");
+    if (ov) ov.hidden = true;
+    const btn = document.getElementById("claude-launch");
+    if (btn) btn.classList.remove("pulse");
+    if (permanent) { try { localStorage.setItem("cadui-onboarded", "1"); } catch (_) {} }
+  }
+  function maybeShowOnboard() {
+    let done = "0";
+    try { done = localStorage.getItem("cadui-onboarded") || "0"; } catch (_) {}
+    if (done !== "1") showOnboard();  // shows on every full load until dismissed for good
+  }
+
   /* ---------- knowledge-base filter: hide cards whose trust level is toggled off ---------- */
   function applyKbFilters() {
     const off = new Set();
@@ -331,4 +362,5 @@
   });
 
   initRoot();
+  maybeShowOnboard();
 })();
