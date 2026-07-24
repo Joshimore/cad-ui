@@ -13,7 +13,7 @@
     <div class="logo">
       <span class="logo-mark">&gt;_</span>
       <span class="logo-text">
-        <span class="logo-name">CAD UI</span>
+        <span class="logo-name">CAD UI <span class="logo-ver">v{{ version }}</span></span>
         <span class="logo-sub">command &amp; agent dashboard</span>
       </span>
     </div>
@@ -34,6 +34,9 @@
       </a>
       <a class="nav-item{% if nav == 'favorites' %} active{% endif %}" href="/favorites">
         <span class="ni-ico">★</span> Избранное
+      </a>
+      <a class="nav-item{% if nav == 'graph' %} active{% endif %}" href="/graph">
+        <span class="ni-ico">❋</span> Граф
       </a>
     </div>
 
@@ -96,5 +99,6 @@
 
 </div>
 <script src="/static/app.js"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

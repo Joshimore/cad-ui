@@ -66,6 +66,12 @@ body {
 }
 .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
 .logo-name { font-weight: 700; letter-spacing: 0.04em; }
+.logo-ver {
+  font-family: var(--mono); font-size: 9px; font-weight: 600;
+  color: var(--accent); background: var(--accent-dim);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 0 4px; margin-left: 4px; vertical-align: middle; letter-spacing: 0;
+}
 .logo-sub { font-family: var(--mono); font-size: 9.5px; color: var(--dim); letter-spacing: 0.05em; }
 
 .nav-section { margin-top: 10px; }
@@ -793,3 +799,81 @@ li.empty, .empty { color: var(--faint); padding: 6px 8px; font-style: italic; }
   .hero-orbit { display: none; }
   .nav-rail { width: 200px; }
 }
+
+/* ============ graph ============ */
+.graph-wrap { display: flex; flex-direction: column; height: 100%; }
+.graph-toolbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px;
+  padding: 12px 20px; border-bottom: 1px solid var(--border-soft); flex-shrink: 0;
+}
+.graph-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchip {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.02em;
+  border: 1px solid var(--border); background: var(--panel); color: var(--faint);
+  border-radius: 20px; padding: 3px 10px; cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.gchip.on { color: var(--text); border-color: var(--accent); background: var(--accent-dim); }
+.gchip:hover { color: var(--text); }
+.graph-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); cursor: pointer; }
+.graph-btn { font-size: 12px; padding: 4px 10px; }
+.graph-stats { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+
+.graph-stage { position: relative; flex: 1 1 auto; min-height: 300px; overflow: hidden; }
+#graph-canvas {
+  width: 100%; height: 100%; display: block; touch-action: none; cursor: grab;
+  background: radial-gradient(1200px 600px at 50% -10%, rgba(194,65,12,0.03), transparent 60%), var(--bg);
+}
+#graph-canvas:active { cursor: grabbing; }
+
+.gedge { stroke: var(--border); stroke-width: 1; opacity: 0.55; }
+.gedge.k-uses { stroke: var(--violet); stroke-dasharray: 4 3; opacity: 0.7; }
+.gedge.k-wiki { stroke: var(--accent); }
+.gedge.hidden, .gnode.hidden { display: none; }
+.has-hover .gedge.dim { opacity: 0.08; }
+.has-hover .gedge.near { opacity: 0.95; stroke-width: 1.6; }
+
+.gnode { cursor: pointer; --c: var(--dim); }
+.gnode circle { fill: var(--c); stroke: var(--panel-2); stroke-width: 1.5; transition: opacity .12s; }
+.gnode-label {
+  font-family: var(--sans); font-size: 9px; fill: var(--dim);
+  paint-order: stroke; stroke: var(--bg); stroke-width: 2.4px; stroke-linejoin: round;
+  pointer-events: none;
+}
+.gnode.t-agent { --c: var(--violet); }
+.gnode.t-skill { --c: var(--gold); }
+.gnode.t-card { --c: var(--green); }
+.gnode.t-report { --c: var(--danger); }
+.gnode.t-track { --c: var(--accent); }
+.gnode.t-protocol { --c: var(--green); }
+.gnode.t-doc { --c: var(--dim); }
+.gnode.t-script, .gnode.t-config { --c: var(--faint); }
+.has-hover .gnode.dim { opacity: 0.22; }
+.has-hover .gnode.near .gnode-label { fill: var(--text); }
+.gnode.near circle { stroke: var(--accent); }
+
+.graph-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 10px; max-width: 320px; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.graph-tip b { font-size: 12.5px; color: var(--text); }
+.graph-tip span { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+.graph-tip .gtip-path { color: var(--faint); word-break: break-all; }
+.graph-empty { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+.graph-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 20px;
+  border-top: 1px solid var(--border-soft); flex-shrink: 0; font-size: 11px; color: var(--dim);
+}
+.glegend-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); }
+.glegend-dot { width: 9px; height: 9px; border-radius: 50%; --c: var(--dim); background: var(--c); }
+.glegend-dot.t-agent { --c: var(--violet); }
+.glegend-dot.t-skill { --c: var(--gold); }
+.glegend-dot.t-card { --c: var(--green); }
+.glegend-dot.t-report { --c: var(--danger); }
+.glegend-dot.t-track { --c: var(--accent); }
+.glegend-dot.t-protocol { --c: var(--green); }
+.glegend-dot.t-doc { --c: var(--dim); }
+.glegend-dot.t-script, .glegend-dot.t-config { --c: var(--faint); }

@@ -37,7 +37,7 @@ A fresh clone is empty: no venv, no agents, no skills, an almost-blank UI. When 
 
 ## Conventions for changes
 
-- Roadmap (do not implement ahead of it without being asked): next is Discord notifications on task events, then knowledge base + graph. Already shipped: phase 1 (file layer), Claude Launch (`>_ Claude` button), phase 2 (full-text search + auto-tagging — `app/core/index.py`), phase 3 (Working directory + projects/tasks + deadlines + dashboard timeline — `app/adapters/projects.py`), branded document generation (bundled `cvd-docs` agent + `docx/pptx/pdf/xlsx` skills — `.claude/`).
+- Roadmap (do not implement ahead of it without being asked): remaining — Discord notifications on task events (deferred), and the knowledge-base / CVD-sessions adapters. Already shipped: phase 1 (file layer), Claude Launch (`>_ Claude` button), phase 2 (full-text search + auto-tagging — `app/core/index.py`), phase 3 (Working directory + projects/tasks + deadlines + dashboard timeline — `app/adapters/projects.py`), branded document generation (bundled `cvd-docs` agent + `docx/pptx/pdf/xlsx` skills — `.claude/`), link graph (`app/core/graph.py` + `/graph` — nodes: documents/agents/skills, edges: markdown links, `[[wiki]]`, agent↔skill; vanilla-SVG force layout, no external libs).
 - Keep it dependency-light: vanilla JS only, no CDN/external assets; new Python deps go to `requirements.txt` with a reason.
 - New panels are adapters (`app/adapters/`, pattern: `detect() → parse data → page route + template`), never hardcoded into the core.
 - UI style: "engineer's notebook" theme in `app/web/static/style.css` — light paper background, burnt-orange accent, mono labels. All colors come from the `:root` CSS variables; never hardcode theme colors in templates. Match it.

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Граф — CAD UI{% endblock %}
+{% block crumb %}Пространство{% endblock %}
+{% block page_h %}Граф связей{% endblock %}
+{% block page_sub %}Документы, агенты, навыки и ссылки между ними{% endblock %}
+
+{% block content %}
+<div class="graph-wrap">
+  <div class="graph-toolbar">
+    <div class="graph-filters" id="graph-layers"></div>
+    <div class="graph-filters" id="graph-subs"></div>
+    <label class="graph-toggle"><input type="checkbox" id="show-isolated"> изолированные</label>
+    <button class="btn btn-ghost graph-btn" id="graph-refit" title="Вписать в экран">⤢ вписать</button>
+    <span class="graph-stats" id="graph-stats">загрузка…</span>
+  </div>
+  <div class="graph-stage">
+    <svg id="graph-canvas" xmlns="http://www.w3.org/2000/svg" aria-label="Граф связей"></svg>
+    <div class="graph-tip" id="graph-tip" hidden></div>
+    <p class="graph-empty empty" id="graph-empty" hidden>Нет связей для отображения.</p>
+  </div>
+  <div class="graph-legend" id="graph-legend"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="/static/graph.js"></script>{% endblock %}

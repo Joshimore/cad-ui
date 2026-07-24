@@ -12,8 +12,10 @@ from fastapi.templating import Jinja2Templates
 
 from fastapi import Body
 
+from . import __version__
 from .adapters import agents_skills
 from .adapters import projects
+from .core import graph
 from .core import index
 from .core import state as state_mod
 from .services import launcher
@@ -75,6 +77,7 @@ def create_app(workspace_root: Path) -> FastAPI:
             "has_work_panel": projects.detect(cfg),
             "nav": nav,
             "fav_count": len(state_mod.load_favorites(cfg)),
+            "version": __version__,
         }
 
     def filelist_items(entries_with_mtime) -> list[dict]:
@@ -155,6 +158,10 @@ def create_app(workspace_root: Path) -> FastAPI:
         index.build(cfg)
         return JSONResponse({"ok": True, "total": index.facets(cfg)["total"]})
 
+    @app.get("/api/graph")
+    def graph_data():
+        return JSONResponse(graph.build_graph(cfg))
+
     @app.get("/recent", response_class=HTMLResponse)
     def recent_page(request: Request):
         return templates.TemplateResponse(request, "filelist_page.html", {
@@ -180,6 +187,10 @@ def create_app(workspace_root: Path) -> FastAPI:
             "items": items,
             "empty_text": "Избранного пока нет — открой файл и нажми ★",
         })
+
+    @app.get("/graph", response_class=HTMLResponse)
+    def graph_page(request: Request):
+        return templates.TemplateResponse(request, "graph.html", base_ctx("graph"))
 
     @app.get("/agents", response_class=HTMLResponse)
     def agents_page(request: Request):
