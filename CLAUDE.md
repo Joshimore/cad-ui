@@ -7,10 +7,13 @@ You are working inside **CAD UI** — an isolated, self-contained agentic worksp
 ```
 run_ui.py  ──►  app/main.py (FastAPI, port 8145)  ──►  browser UI (127.0.0.1:8145)
                     │
+                    │
                     ├─ app/core/      file layer: config+exclusions, lazy tree scan,
-                    │                 markdown render (link rewriting), favorites state
+                    │                 markdown render, favorites; search index.py
+                    │                 (SQLite FTS5) + tagger.py (heuristic auto-tags)
                     ├─ app/adapters/  auto-detected panels; agents_skills.py watches
                     │                 .claude/agents/*.md and .claude/skills/*/SKILL.md
+                    ├─ app/services/  actions: launcher.py (Claude Launch)
                     └─ app/web/       Jinja2 templates + vanilla JS (no external libs)
 ```
 
@@ -30,7 +33,7 @@ A fresh clone is empty: no venv, no agents, no skills, an almost-blank UI. When 
 
 ## Conventions for changes
 
-- Roadmap (do not implement ahead of it without being asked): phase 2 — search + auto-tagging; then tracks adapter, «Новая задача» wizard + Discord; then knowledge base + graph. Claude Launch already shipped (the `>_ Claude` button). The «Поиск» pill in the topbar is intentionally a stub until phase 2.
+- Roadmap (do not implement ahead of it without being asked): next is the tracks adapter, then «Новая задача» wizard + Discord, then knowledge base + graph. Already shipped: phase 1 (file layer), Claude Launch (`>_ Claude` button), phase 2 (full-text search + auto-tagging — the topbar search form, `/search`, `app/core/index.py`).
 - Keep it dependency-light: vanilla JS only, no CDN/external assets; new Python deps go to `requirements.txt` with a reason.
 - New panels are adapters (`app/adapters/`, pattern: `detect() → parse data → page route + template`), never hardcoded into the core.
 - UI style: "engineer's notebook" theme in `app/web/static/style.css` — light paper background, burnt-orange accent, mono labels. All colors come from the `:root` CSS variables; never hardcode theme colors in templates. Match it.

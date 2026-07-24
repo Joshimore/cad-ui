@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -10,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from .adapters import agents_skills
+from .core import index
 from .core import state as state_mod
 from .services import launcher
 from .core.config import WorkspaceConfig, load_config
@@ -46,6 +48,9 @@ def create_app(workspace_root: Path) -> FastAPI:
             if request.headers.get("x-requested-with") != "cad-ui":
                 return JSONResponse({"detail": "CSRF check failed"}, status_code=403)
         return await call_next(request)
+
+    # Build the search index in the background so startup is not blocked.
+    threading.Thread(target=index.build, args=(cfg,), daemon=True).start()
 
     def guard(rel_path: str) -> Path:
         try:
@@ -120,6 +125,26 @@ def create_app(workspace_root: Path) -> FastAPI:
             **base_ctx("docs"),
             "file": file_ctx,
         })
+
+    @app.get("/search", response_class=HTMLResponse)
+    def search_page(request: Request, q: str = Query(default=""),
+                    subsystem: str = Query(default=""), type: str = Query(default="")):
+        index.sync(cfg)  # cheap incremental refresh (throttled)
+        q = q.strip()
+        hits = index.search(cfg, q, subsystem=subsystem, ftype=type) if q else []
+        return templates.TemplateResponse(request, "search.html", {
+            **base_ctx("search"),
+            "q": q,
+            "hits": [{"hit": h, "mtime": fmt_mtime(h.mtime)} for h in hits],
+            "facets": index.facets(cfg),
+            "active_subsystem": subsystem,
+            "active_type": type,
+        })
+
+    @app.post("/api/reindex")
+    def reindex():
+        index.build(cfg)
+        return JSONResponse({"ok": True, "total": index.facets(cfg)["total"]})
 
     @app.get("/recent", response_class=HTMLResponse)
     def recent_page(request: Request):

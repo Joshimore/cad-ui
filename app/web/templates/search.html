@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Поиск{% if q %}: {{ q }}{% endif %} — CAD UI{% endblock %}
+{% block crumb %}Пространство{% endblock %}
+{% block page_h %}Поиск{% endblock %}
+{% block page_sub %}{% if q %}{{ hits|length }} результат(ов) по «{{ q }}»{% else %}Полнотекстовый поиск по документам{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-pad search-page">
+
+  <div class="search-toolbar">
+    <div class="facet-row">
+      {% set fs = facets %}
+      {% if fs.subsystem %}
+      <span class="facet-label">Подсистема:</span>
+      <a class="chip nav{% if not active_subsystem %} on{% endif %}"
+         href="/search?q={{ q|urlencode }}&type={{ active_type|urlencode }}">все</a>
+      {% for name, count in fs.subsystem %}
+      <a class="chip nav{% if active_subsystem == name %} on{% endif %}"
+         href="/search?q={{ q|urlencode }}&subsystem={{ name|urlencode }}&type={{ active_type|urlencode }}">{{ name }} <b>{{ count }}</b></a>
+      {% endfor %}
+      {% endif %}
+    </div>
+    <div class="facet-row">
+      {% if fs.type %}
+      <span class="facet-label">Тип:</span>
+      <a class="chip nav{% if not active_type %} on{% endif %}"
+         href="/search?q={{ q|urlencode }}&subsystem={{ active_subsystem|urlencode }}">все</a>
+      {% for name, count in fs.type %}
+      <a class="chip nav{% if active_type == name %} on{% endif %}"
+         href="/search?q={{ q|urlencode }}&subsystem={{ active_subsystem|urlencode }}&type={{ name|urlencode }}">{{ name }} <b>{{ count }}</b></a>
+      {% endfor %}
+      {% endif %}
+    </div>
+    <button class="reindex-btn" id="reindex" title="Пересобрать индекс с нуля">⟳ Переиндексировать</button>
+  </div>
+
+  {% if not q %}
+  <section class="card"><p class="empty">Введи запрос в поле поиска сверху. Индексируются markdown и текстовые файлы — {{ facets.total }} шт.</p></section>
+  {% elif hits %}
+  <ul class="results">
+    {% for it in hits %}
+    <li>
+      <a class="nav result" href="/view?path={{ it.hit.rel_path | urlencode }}" title="{{ it.hit.rel_path }}">
+        <div class="result-head">
+          <span class="result-name">{{ it.hit.name }}</span>
+          <span class="result-mtime">{{ it.mtime }}</span>
+        </div>
+        <div class="result-snippet">{{ it.hit.snippet | safe }}</div>
+        <div class="result-meta">
+          <span class="tag tag-type">{{ it.hit.type }}</span>
+          <span class="tag">{{ it.hit.subsystem }}</span>
+          <span class="result-path">{{ it.hit.rel_path }}</span>
+        </div>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <section class="card"><p class="empty">Ничего не найдено по «{{ q }}»{% if active_subsystem or active_type %} с текущими фильтрами{% endif %}.</p></section>
+  {% endif %}
+
+</div>
+{% endblock %}

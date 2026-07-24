@@ -14,6 +14,7 @@ from .config import (
 
 RECENT_LIMIT = 30
 RECENT_MAX_DIRS = 2000  # hard cap on directories visited per recent-files request
+INDEX_MAX_DIRS = 20000  # runaway guard for a full index walk
 
 
 class PathOutsideWorkspace(Exception):
@@ -70,6 +71,33 @@ def list_dir(cfg: WorkspaceConfig, rel_path: str) -> list[Entry]:
         return []
     key = lambda e: e.name.lower()
     return sorted(dirs, key=key) + sorted(files, key=key)
+
+
+def iter_text_files(cfg: WorkspaceConfig):
+    """Yield (rel_path, abs_path, mtime, kind) for every indexable markdown/text
+    file, skipping excluded dirs/files. Bounded by INDEX_MAX_DIRS."""
+    stack: list[Path] = [cfg.root]
+    visited = 0
+    while stack and visited < INDEX_MAX_DIRS:
+        current = stack.pop()
+        visited += 1
+        try:
+            with os.scandir(current) as it:
+                for de in it:
+                    if de.is_dir(follow_symlinks=False):
+                        if not cfg.is_dir_excluded(de.name):
+                            stack.append(Path(de.path))
+                    elif de.is_file(follow_symlinks=False):
+                        kind = file_kind(Path(de.name))
+                        if kind in ("markdown", "text") and not cfg.is_file_excluded(de.name):
+                            try:
+                                mtime = de.stat(follow_symlinks=False).st_mtime
+                            except OSError:
+                                continue
+                            rel = str(Path(de.path).relative_to(cfg.root))
+                            yield rel, Path(de.path), mtime, kind
+        except OSError:
+            continue
 
 
 def recent_files(cfg: WorkspaceConfig) -> list[tuple[Entry, float]]:

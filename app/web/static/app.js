@@ -65,7 +65,29 @@
           }
         })
         .catch(() => flashBtn(cl, "err", "ошибка"));
+      return;
     }
+
+    /* ---------- reindex ---------- */
+    const ri = e.target.closest("#reindex");
+    if (ri) {
+      ri.disabled = true;
+      flashBtn(ri, "ok", "⟳ индексирую…");
+      apiPost("/api/reindex")
+        .then((r) => r.json())
+        .then(() => navigate(location.pathname + location.search, false))
+        .catch(() => {})
+        .finally(() => { ri.disabled = false; });
+    }
+  });
+
+  /* ---------- search form → SPA navigation ---------- */
+  document.addEventListener("submit", function (e) {
+    const form = e.target.closest("#search-form");
+    if (!form) return;
+    e.preventDefault();
+    const q = (form.querySelector('input[name="q"]').value || "").trim();
+    navigate("/search?q=" + encodeURIComponent(q), true);
   });
 
   function apiPost(url) {

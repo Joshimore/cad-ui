@@ -26,6 +26,9 @@
       <a class="nav-item{% if nav == 'docs' %} active{% endif %}" href="/docs">
         <span class="ni-ico">◫</span> Документы
       </a>
+      <a class="nav-item{% if nav == 'search' %} active{% endif %}" href="/search">
+        <span class="ni-ico">⌕</span> Поиск
+      </a>
       <a class="nav-item{% if nav == 'recent' %} active{% endif %}" href="/recent">
         <span class="ni-ico">◷</span> Недавние
       </a>
@@ -61,7 +64,11 @@
         </h1>
       </div>
       <div class="topbar-tools">
-        <span class="palette-pill" title="Поиск появится в фазе 2">⌕ Поиск <kbd>скоро</kbd></span>
+        <form class="search-form" id="search-form" action="/search" method="get" role="search">
+          <span class="search-ico">⌕</span>
+          <input type="search" name="q" value="{{ q|default('') }}"
+                 placeholder="Поиск по документам…" autocomplete="off" aria-label="Поиск">
+        </form>
         <button class="btn-claude" id="claude-launch"
                 title="Открыть терминал с Claude в корне пространства">&gt;_ Claude</button>
         <span class="local-badge"><span class="dot green"></span> Локально</span>
