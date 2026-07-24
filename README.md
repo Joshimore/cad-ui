@@ -6,51 +6,9 @@
 
 **Версия:** `v0.1.0` — базовый функционал готов; из базового остаётся только Discord-трек.
 
-> 🚀 **Новый в команде? Склонировал репозиторий?** Открой **[`INSTRUCTION.md`](INSTRUCTION.md)** — пошаговая настройка среды на твоём компьютере. При первом запуске UI сам покажет подсказку с этими шагами.
+> 🚀 **Склонировал репозиторий?** Открой **[`INSTRUCTION.md`](INSTRUCTION.md)** — пошаговая настройка среды на твоём компьютере. При первом запуске UI сам покажет подсказку с этими шагами.
 
 ---
-
-## Установка — шаг за шагом
-
-**Шаг 0. Что должно быть на компьютере:**
-
-- **Python 3.11+** с pip — проверь в терминале: `python --version` и `python -m pip --version`. Если нет — поставь с [python.org](https://www.python.org/downloads/) (при установке отметь галочку *Add Python to PATH*).
-- **Git** — проверь: `git --version`. Если нет — [git-scm.com](https://git-scm.com/downloads).
-- **Claude Code** (опционально, для кнопки `>_ Claude` и работы с агентами) — проверь: `claude --version`.
-
-**Шаг 1. Склонируй репозиторий:**
-
-```
-git clone https://github.com/Joshimore/cad-ui.git
-```
-
-**Шаг 2. Запусти `start.bat`** (двойной клик по файлу в папке `cad-ui`).
-
-При первом запуске скрипт сам:
-- создаст виртуальное окружение `.venv`;
-- установит зависимости из `requirements.txt`;
-- поднимет сервер и откроет браузер на `http://127.0.0.1:8145`.
-
-**Шаг 3. Проверь, что всё работает:** в браузере открылся «Центр управления» CAD UI, слева навигация, внизу зелёная строка `локально · 127.0.0.1`.
-
-**Шаг 4 (опционально). Настрой под себя:** скопируй `config.example.json` в корень рабочей папки под именем `workspace.config.json` и допиши свои исключения или команду запуска Claude. Без конфига всё работает на дефолтах.
-
-Готово. Окно терминала, которое открыл `start.bat`, — это сервер: закроешь его — UI остановится.
-
-<details>
-<summary>Установка вручную (без start.bat / Linux / macOS)</summary>
-
-```
-cd cad-ui
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt        # Windows
-# .venv/bin/pip install -r requirements.txt          # Linux/macOS
-.venv\Scripts\python run_ui.py                        # Windows
-# .venv/bin/python run_ui.py                          # Linux/macOS
-```
-
-По умолчанию рабочая папка — сама папка cad-ui; можно указать другую: `python run_ui.py D:\example-workspace`. Опции: `--port 9000`, `--no-browser`.
-</details>
 
 ## Разделы интерфейса
 
