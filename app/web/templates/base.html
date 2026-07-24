@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}CAD UI — {{ workspace_name }}{% endblock %}</title>
-<link rel="stylesheet" href="/static/style.css">
+<script>
+  /* Apply the saved (or system) theme before first paint so there is no flash. */
+  (function () {
+    try {
+      var t = localStorage.getItem("cadui-theme")
+        || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="/static/style.css?v={{ asset_ver }}">
 </head>
 <body>
 <div class="shell">
@@ -35,6 +45,7 @@
       <a class="nav-item{% if nav == 'favorites' %} active{% endif %}" href="/favorites">
         <span class="ni-ico">★</span> Избранное
       </a>
+      {# keep class "nav-item" (full load): /graph boots graph.js via extra_js, which a SPA "nav" link would skip #}
       <a class="nav-item{% if nav == 'graph' %} active{% endif %}" href="/graph">
         <span class="ni-ico">❋</span> Граф
       </a>
@@ -81,6 +92,7 @@
           <input type="search" name="q" value="{{ q|default('') }}"
                  placeholder="Поиск по документам…" autocomplete="off" aria-label="Поиск">
         </form>
+        <button class="btn-theme" id="theme-toggle" title="Тёмная тема" aria-label="Переключить тему">☾</button>
         <button class="btn-claude" id="claude-launch"
                 title="Открыть терминал с Claude в корне пространства">&gt;_ Claude</button>
         <span class="local-badge"><span class="dot green"></span> Локально</span>
@@ -98,7 +110,12 @@
   </div>
 
 </div>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v={{ asset_ver }}"></script>
+{# Per-page scripts. These execute ONLY on a full page load: app.js's SPA navigate()
+   swaps #content in place and never runs injected <script> tags. So any link to a
+   page that ships its own extra_js (e.g. /graph -> graph.js) must trigger a full
+   load — use class "nav-item", never class "nav" (which app.js hijacks into an
+   in-place swap), or the page's script will never run. #}
 {% block extra_js %}{% endblock %}
 </body>
 </html>

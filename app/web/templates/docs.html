@@ -17,6 +17,10 @@
           <h2>{{ file.name }}</h2>
           <button class="fav-btn{% if file.is_favorite %} on{% endif %}" data-path="{{ file.rel_path }}"
                   title="В избранное">★</button>
+          {% if file.kind in ("markdown", "text") %}
+          <button class="btn btn-ghost edit-btn" id="doc-edit"
+                  data-path="{{ file.rel_path }}" data-kind="{{ file.kind }}">✎ Редактировать</button>
+          {% endif %}
         </div>
         <div class="viewer-meta">
           <span class="v-path">{{ file.rel_path }}</span>

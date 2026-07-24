@@ -92,6 +92,13 @@
       return;
     }
 
+    /* ---------- theme toggle ---------- */
+    if (e.target.closest("#theme-toggle")) { toggleTheme(); return; }
+
+    /* ---------- open document editor ---------- */
+    const ed = e.target.closest("#doc-edit");
+    if (ed) { openEditor(ed); return; }
+
     /* ---------- project status change ---------- */
     const so = e.target.closest(".status-opt");
     if (so && !so.classList.contains("on")) {
@@ -223,6 +230,83 @@
     const newNav = doc.querySelector(".nav-rail");
     if (curNav && newNav) curNav.replaceWith(newNav);
   }
+
+  /* ---------- document editor ---------- */
+  async function openEditor(btn) {
+    const path = btn.dataset.path;
+    const pane = document.querySelector(".md-content, .text-content");
+    if (!pane) return;
+    let raw;
+    try {
+      const r = await fetch("/raw?path=" + encodeURIComponent(path));
+      if (!r.ok) throw 0;
+      raw = await r.text();
+    } catch (_) {
+      alert("Не удалось открыть файл для правки.");
+      return;
+    }
+    btn.disabled = true;
+
+    const wrap = document.createElement("div");
+    wrap.className = "editor-wrap";
+    const bar = document.createElement("div");
+    bar.className = "editor-bar";
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn btn-primary";
+    saveBtn.textContent = "Сохранить";
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn btn-ghost";
+    cancelBtn.textContent = "Отмена";
+    const hint = document.createElement("span");
+    hint.className = "editor-hint";
+    hint.textContent = "Ctrl+S — сохранить · Esc — отмена";
+    bar.append(saveBtn, cancelBtn, hint);
+    const ta = document.createElement("textarea");
+    ta.className = "md-editor";
+    ta.value = raw;
+    ta.spellcheck = false;
+    wrap.append(bar, ta);
+    pane.replaceWith(wrap);
+    ta.focus();
+
+    const reload = () => navigate(location.pathname + location.search, false);
+    const save = async () => {
+      saveBtn.disabled = true;
+      try {
+        const r = await apiPost("/api/file/save", { path: path, content: ta.value });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) reload();
+        else { alert(data.detail || "Не удалось сохранить."); saveBtn.disabled = false; }
+      } catch (_) {
+        alert("Ошибка сети.");
+        saveBtn.disabled = false;
+      }
+    };
+    saveBtn.addEventListener("click", save);
+    cancelBtn.addEventListener("click", reload);
+    ta.addEventListener("keydown", (ev) => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "s") { ev.preventDefault(); save(); }
+      else if (ev.key === "Escape") { ev.preventDefault(); reload(); }
+    });
+  }
+
+  /* ---------- theme ---------- */
+  function toggleTheme() {
+    const root = document.documentElement;
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.classList.add("theme-anim");           // enable the cross-fade for the switch
+    root.dataset.theme = next;
+    try { localStorage.setItem("cadui-theme", next); } catch (_) {}
+    updateThemeToggle(next);
+    setTimeout(() => root.classList.remove("theme-anim"), 360);
+  }
+  function updateThemeToggle(theme) {
+    const btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    btn.textContent = theme === "dark" ? "☀" : "☾";
+    btn.title = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+  }
+  updateThemeToggle(document.documentElement.dataset.theme || "light");
 
   window.addEventListener("popstate", function () {
     navigate(location.pathname + location.search, false);

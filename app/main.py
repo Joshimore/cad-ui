@@ -31,14 +31,27 @@ from .core.scanner import (
 )
 
 APP_DIR = Path(__file__).parent
+STATIC_DIR = APP_DIR / "web" / "static"
 MAX_TEXT_BYTES = 2 * 1024 * 1024  # refuse to render text files above 2 MB
 ALLOWED_HOSTS = {"127.0.0.1", "localhost"}  # reject other Host headers (DNS rebinding)
 
 
+def _asset_version() -> str:
+    """Newest static-file mtime, appended as ?v= to asset URLs so a browser fetches
+    fresh CSS/JS after an update (StaticFiles sends no Cache-Control) instead of a
+    heuristically-cached stale copy. Recomputed at startup, which is when files change."""
+    try:
+        mtimes = [p.stat().st_mtime for p in STATIC_DIR.iterdir() if p.is_file()]
+        return str(int(max(mtimes))) if mtimes else "0"
+    except OSError:
+        return "0"
+
+
 def create_app(workspace_root: Path) -> FastAPI:
     cfg: WorkspaceConfig = load_config(workspace_root)
+    asset_ver = _asset_version()
     app = FastAPI(title="CAD UI", docs_url=None, redoc_url=None)
-    app.mount("/static", StaticFiles(directory=APP_DIR / "web" / "static"), name="static")
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     templates = Jinja2Templates(directory=APP_DIR / "web" / "templates")
 
     @app.middleware("http")
@@ -78,6 +91,7 @@ def create_app(workspace_root: Path) -> FastAPI:
             "nav": nav,
             "fav_count": len(state_mod.load_favorites(cfg)),
             "version": __version__,
+            "asset_ver": asset_ver,
         }
 
     def filelist_items(entries_with_mtime) -> list[dict]:
@@ -293,6 +307,22 @@ def create_app(workspace_root: Path) -> FastAPI:
         guard(path)
         now = state_mod.toggle_favorite(cfg, path)
         return JSONResponse({"favorite": now})
+
+    @app.post("/api/file/save")
+    def file_save(payload: dict = Body(...)):
+        # Editing an existing text/markdown document from the viewer. Same guards as
+        # the other write endpoints: CSRF header (middleware) + path + type + size.
+        target = guard(payload.get("path", ""))
+        content = payload.get("content", "")
+        if not target.is_file():
+            raise HTTPException(status_code=404, detail="File not found")
+        if file_kind(target) not in ("markdown", "text"):
+            raise HTTPException(status_code=400, detail="Not an editable text file")
+        if not isinstance(content, str) or len(content.encode("utf-8")) > MAX_TEXT_BYTES:
+            raise HTTPException(status_code=413, detail="File too large")
+        target.write_text(content, encoding="utf-8")
+        index.sync(cfg, force=True)  # keep search + graph in step with the edit
+        return JSONResponse({"ok": True, "mtime": fmt_mtime(target.stat().st_mtime)})
 
     @app.get("/raw")
     def raw(path: str = Query(...)):

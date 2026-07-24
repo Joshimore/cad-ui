@@ -33,7 +33,7 @@
   let nodes = [], edges = [], byId = new Map();
   let view = { x: 0, y: 0, w: 1000, h: 700 };   // SVG viewBox (world coords)
   const active = { layers: new Set(), subs: new Set() };
-  let hovered = null, dragNode = null, alpha = 0, raf = 0, data_truncated = false;
+  let dragNode = null, alpha = 0, raf = 0, data_truncated = false;
 
   fetch("/api/graph").then((r) => r.json()).then(init).catch(() => {
     statsEl.textContent = "не удалось загрузить граф";
@@ -54,7 +54,7 @@
     nodes.forEach((n, i) => {
       const a = i * 2.399963, r = R * Math.sqrt(i + 1) / Math.sqrt(nodes.length || 1) + 8;
       n.x = Math.cos(a) * r; n.y = Math.sin(a) * r;
-      n.vx = 0; n.vy = 0; n.pin = false;
+      n.pin = false;
       n.rad = 5 + Math.min(9, (n.degree || 0) * 1.4);
       n.neighbors = new Set();
     });
@@ -68,9 +68,10 @@
 
     buildControls(data);
     buildScene();
-    layout(300);
+    /* iteration budget scales down with size so a large graph can't freeze the
+       main thread on load (all-pairs step is O(n^2)); applyFilters() renders. */
+    layout(nodes.length ? Math.min(300, Math.max(50, Math.floor(2e7 / (nodes.length * nodes.length)))) : 0);
     applyFilters();
-    render();
     fit();
   }
 
@@ -98,7 +99,7 @@
     Object.keys(types).sort((a, b) => types[b] - types[a]).forEach((t) => {
       const item = document.createElement("span");
       item.className = "glegend-item";
-      item.innerHTML = '<span class="glegend-dot t-' + t + '"></span>' + t + " · " + types[t];
+      item.innerHTML = '<span class="glegend-dot t-' + esc(t) + '"></span>' + esc(t) + " · " + types[t];
       legendEl.appendChild(item);
     });
 
@@ -189,6 +190,7 @@
     statsEl.textContent = shownN + " узлов · " + shownE + " связей"
       + (data_truncated ? " · показаны первые " + nodes.length : "");
     emptyEl.hidden = shownN > 0;
+    render();   // position the now-visible nodes/edges (the idle sim isn't running)
   }
 
   /* ---------- Fruchterman-Reingold simulation ---------- */
@@ -272,7 +274,6 @@
 
   /* ---------- hover highlight ---------- */
   function setHover(n) {
-    hovered = n;
     if (!n) { svg.classList.remove("has-hover"); tip.hidden = true; return; }
     svg.classList.add("has-hover");
     nodes.forEach((m) => {
@@ -286,7 +287,7 @@
       e.el.classList.toggle("dim", !inc);
     });
     tip.hidden = false;
-    tip.innerHTML = "<b>" + esc(n.label) + "</b><span>" + n.type
+    tip.innerHTML = "<b>" + esc(n.label) + "</b><span>" + esc(n.type)
       + (n.subsystem ? " · " + esc(n.subsystem) : "") + "</span><span class='gtip-path'>"
       + esc(n.id) + "</span>";
   }
@@ -308,20 +309,25 @@
   function startDrag(ev, n) {
     ev.stopPropagation();
     dragNode = n; n._moved = false;
+    const sx = ev.clientX, sy = ev.clientY;
     n.el.setPointerCapture(ev.pointerId);
     const move = (e) => {
+      if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 3) n._moved = true;
+      if (!n._moved) return;   // sub-pixel jitter: let the click through, don't drag/pin
       const w = clientToWorld(e);
-      n.x = w.x; n.y = w.y; n.pin = true; n._moved = true;
+      n.x = w.x; n.y = w.y; n.pin = true;
       render(); heat(0.35);
     };
-    const up = (e) => {
-      n.el.releasePointerCapture(ev.pointerId);
+    const up = () => {
+      try { n.el.releasePointerCapture(ev.pointerId); } catch (_) {}
       n.el.removeEventListener("pointermove", move);
       n.el.removeEventListener("pointerup", up);
+      n.el.removeEventListener("pointercancel", up);
       dragNode = null;
     };
     n.el.addEventListener("pointermove", move);
     n.el.addEventListener("pointerup", up);
+    n.el.addEventListener("pointercancel", up);
   }
 
   /* ---------- pan + zoom on the background ---------- */
@@ -350,6 +356,19 @@
     view.w *= f; view.h *= f;
     applyView();
   }, { passive: false });
+
+  /* Keep the viewBox aspect ratio equal to the stage's so the SVG never letterboxes
+     (default preserveAspectRatio=meet) and clientToWorld stays accurate after a resize. */
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => {
+      const cw = stage.clientWidth, ch = stage.clientHeight;
+      if (cw <= 0 || ch <= 0) return;
+      const cx = view.x + view.w / 2, cy = view.y + view.h / 2;
+      view.w = view.h * (cw / ch);
+      view.x = cx - view.w / 2; view.y = cy - view.h / 2;
+      applyView();
+    }).observe(stage);
+  }
 
   function applyView() {
     svg.setAttribute("viewBox", view.x + " " + view.y + " " + view.w + " " + view.h);
