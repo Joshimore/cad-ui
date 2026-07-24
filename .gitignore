@@ -6,6 +6,10 @@ __pycache__/
 # runtime state (isolated mode: the repo itself is the workspace)
 .cad-ui/
 
+# team work stays local — commit the empty folder only, never its projects/tasks
+Working directory/*
+!Working directory/.gitkeep
+
 # personal config — webhooks and local paths must never reach the shared repo
 workspace.config.json
 
