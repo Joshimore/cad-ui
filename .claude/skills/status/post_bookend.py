@@ -13,6 +13,7 @@ and the channel where each project's track lives. Days with no real tracked work
 """
 import argparse
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -46,7 +47,12 @@ def gather_today_by_project(cfg, today):
     for key, proj in (cfg.get("projects") or {}).items():
         if not proj.get("path"):
             continue
-        track = resolve_project_root(proj) / "track"
+        try:
+            track = resolve_project_root(proj) / "track"
+        except ValueError as exc:
+            # One misconfigured project must not kill the whole daily digest.
+            print(f"[status] skipping project {key}: {exc}", file=sys.stderr)
+            continue
         current = track / "current.txt"
         if not current.exists():
             continue

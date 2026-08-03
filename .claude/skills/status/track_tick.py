@@ -78,9 +78,17 @@ def read_active_project():
 
 def resolve_project_root(proj):
     """Absolute project root; workspace-relative paths resolve against the repo root
-    (so scheduled runs, which have no reliable cwd, still find the project)."""
+    (so scheduled runs, which have no reliable cwd, still find the project).
+
+    Refuses anything outside the workspace — the same boundary the server enforces in
+    app/core/scanner.py:resolve_safe(). A configured absolute path must not make the
+    skill read or write outside the repo.
+    """
     p = Path(proj["path"])
-    return (p if p.is_absolute() else (WORKSPACE_ROOT / p)).resolve()
+    root = (p if p.is_absolute() else (WORKSPACE_ROOT / p)).resolve()
+    if root != WORKSPACE_ROOT and not root.is_relative_to(WORKSPACE_ROOT):
+        raise ValueError(f"project path is outside the workspace: {proj['path']}")
+    return root
 
 
 def recent_files(root: Path):
