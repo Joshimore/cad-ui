@@ -20,10 +20,10 @@ A source raises a claim to **L2+ only if it applies to the target version.** A s
 Three independent origins beat three copies of the same origin. Reward genuinely independent corroboration. Note when "multiple sources" are actually one source restated.
 
 ## Internal agreement is not corroboration
-Agents/models in this system are one engine with different prompts. Their agreement stays at L0+. **L1 requires independent external corroboration** (independent sources, or genuinely different models — see the multi-model seam in `methodology/board-roles.md`).
+Agents/models in this system are one engine with different prompts. Their agreement stays at L0+. **L1 requires independent external corroboration** (independent sources, or genuinely different models — the multi-model seam is described in the `validation-methodology` skill).
 
 ## Closed channels — ethics
 Use closed/expert chats only correctly: official access, community rules respected, no unauthorized scraping of private data. If a bot is disallowed, make a manual summary and record it as an expert note with its source.
 
 ## Mapping to L0–L5
-See `methodology/trust-levels.md` for the full scale and what each promotion requires.
+See the `validation-methodology` skill for the full scale and what each promotion requires.

@@ -28,11 +28,12 @@ Deleting this module must leave all of the above working.
 The module expects exactly **two folder names** to exist in the workspace root:
 
 - `knowledge-base/` — read at session bootstrap to re-check version stamps, written when a
-  claim is promoted or rejected. Card format: see `contracts/knowledge-base.md`.
+  claim is promoted or rejected. Format: `contracts/knowledge-base.md`.
 - `sessions/` — every agent writes its own trace file here; the orchestrator writes the
-  report, the telemetry and the `LOG.md` row.
+  report, the telemetry and the `LOG.md` row. Format: `contracts/sessions.md`.
 
-These two names are the whole coupling to the host repository. Nothing else is assumed.
+These two names are the whole coupling to the host repository. Nothing else is assumed. Both
+are git-ignored by the host: the module ships the *format*, never the findings.
 
 ## Three invariants
 
@@ -48,16 +49,21 @@ These two names are the whole coupling to the host repository. Nothing else is a
 
 ## Decisions taken on port (2026-08-03)
 
-- `sessions/` starts empty — the 13 sessions from the origin repo are not carried over.
-- `INDEX.md` is not ported: the `knowledge_base` adapter computes the tally itself.
-- `sessions/` **is committed**, deliberately against the "contents stay local" pattern used
-  by `Working directory/` and `knowledge-base/` — a trace nobody else can read defeats the
-  purpose of reproducibility.
+- `sessions/` starts empty and is **git-ignored**, the same "shared skeleton, local contents"
+  rule as `knowledge-base/` and `Working directory/`. A trace records what *you* investigated
+  and what you rejected — it is not team material by default. Sharing a result is deliberate:
+  copy the finished `REPORT.md` to `Working directory/<project>/output/` as a deliverable.
+- No aggregate index file: the host computes the knowledge-base tally from the cards.
 - The knowledge base holds cards at **all trust levels**, not only L4+. The origin repo's
   L4+-only rule produced zero cards in 13 sessions; an always-empty panel is worse than a
   ranked one.
-- `.gitignore` gets an exception for `knowledge-base/anti-patterns/` so negative patterns
-  reach the team; ordinary cards stay local.
+- **Nothing accumulated in the origin repo is carried over** — no cards, no anti-patterns, no
+  sessions. A validation base belongs to whoever ran the sessions; what the team shares is the
+  folder and the format, not the findings.
+- Anti-patterns follow the same rule as cards: **one file each** under
+  `knowledge-base/anti-patterns/`, contents **local** (`knowledge-base/*` stays git-ignored, no
+  exception). One file per entry is a hard requirement — the host reads a file as a card, so
+  several anti-patterns in one file collapse into a single row.
 
 ## How to remove or replace the module
 
@@ -72,7 +78,13 @@ environment folder names and the three invariants, and the wrapper needs no chan
 
 ## Port status
 
-Done: module files in place, registry shows the three skills.
-Pending: session protocol section in `SKILL.md` · cross-module reference rewrite · the 10
-agents · anti-pattern split · template frontmatter · `sessions/` + headless test · one real
-domain pack · `contracts/knowledge-base.md` + the trigger line · the sessions adapter.
+Done: module files in place · session protocol in `SKILL.md` · cross-module references rewritten
+to skill names · the 10 agents (registry shows 11 agents, 8 skills) · both contracts written ·
+template frontmatter aligned with the host and verified through its adapter · `sessions/`
+git-ignored and documented · trigger line in the root `CLAUDE.md` · teammate setup note in
+`INSTRUCTION.md`.
+
+Pending: **the headless test** — one real validation run end to end with the server stopped,
+which is the only proof the port works · one real domain pack (`domains/<name>/` with
+`test_execution` in `pack.md`) · the sessions adapter in the host (`app/adapters/sessions.py`),
+which must hide itself when `sessions/LOG.md` is absent, since the folder is git-ignored.

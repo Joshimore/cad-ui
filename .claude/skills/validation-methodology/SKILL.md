@@ -55,8 +55,10 @@ plugins/custom nodes, hardware where it matters. Do not start validating against
 version; ask if the user has not stated it. This is the version gate and it is first.
 
 ## 2. Create the session folder
-`sessions/<YYYY-MM-DD>-<short-slug>/` containing `trace/` and `telemetry/`. The report lands
-in the session root. Announce the chosen tier in one line, then proceed.
+`sessions/<YYYY-MM-DD>-<short-slug>/` containing `trace/` and `telemetry/`; the report lands in
+the session root. `sessions/` is git-ignored and does **not** ship with the repository — create
+it and its `LOG.md` if they are missing. Full layout and who writes what: `contracts/sessions.md`.
+Announce the chosen tier in one line, then proceed.
 
 ## 3. Spawn agents with the trace path
 Every agent you spawn must be told its **session trace path** and required to write its own

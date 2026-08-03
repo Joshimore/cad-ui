@@ -6,10 +6,10 @@ description: How to produce the single self-contained session report and the Gol
 # Report Writing
 
 ## One report per session, self-contained
-Fill `templates/session-report-template.md` into `sessions/<session>/REPORT.md`. It contains, in order: the session narrative, the structured form (with versions), the Knowledge Cards produced this session, the Error/Hallucination Log entries, and the decision-ready brief. No separate documents.
+Fill the `session-report-template.md` shipped with the `validation-methodology` skill into `sessions/<session>/REPORT.md`. It contains, in order: the session narrative, the structured form (with versions), the Knowledge Cards produced this session, the Error/Hallucination Log entries, and the decision-ready brief. No separate documents.
 
 ## Who writes the file: reporter produces, orchestrator persists
-The `reporter` is read-only: it returns the finished report body + explicit KB deltas **as text**, and the **orchestrator** persists `REPORT.md` verbatim, creates the L4+ Knowledge Cards, appends anti-patterns, and applies the `INDEX.md` metrics deltas. The full rationale (the harness deliberately blocks subagents from writing report files) lives in its canonical home, **`CLAUDE.md` §6** — don't restate it here, and don't try to evade the guard by renaming the file.
+The `reporter` is read-only: it returns the finished report body + explicit KB deltas **as text**, and the **orchestrator** persists `REPORT.md` verbatim, writes the Knowledge Cards, and appends the anti-patterns. The full rationale (the harness deliberately blocks subagents from writing report files) lives in its canonical home, **Session protocol §6 of the `validation-methodology` skill** — don't restate it here, and don't try to evade the guard by renaming the file.
 
 ## Build it from disk, not memory
 Read the entire `sessions/<session>/trace/` folder and assemble the report from those files. The trace is the source of truth; the orchestrator's recollection is not.
@@ -23,7 +23,9 @@ Read the entire `sessions/<session>/trace/` folder and assemble the report from 
 For each claim give the human: trust level, version status, the key dissent (if any), and the recommendation (use / don't use / test further / use only with limits). Keep it tight enough to decide from at a glance.
 
 ## Knowledge Cards → Gold KB
-Use `templates/knowledge-card-template.md`. Every card is **version-stamped**. Promote a card to `knowledge-base/<domain>/` (one subfolder per domain, mirroring `domains/`) only when it reached **L4+** — the trust level is a card field/INDEX column, never a folder. On promotion, update `knowledge-base/INDEX.md` and increment the running metrics (hallucinations caught, claims promoted/rejected, version mismatches caught).
+Use the `knowledge-card-template.md` shipped with the `validation-methodology` skill. Every card is **version-stamped** and must carry the frontmatter the host reads (`title`, `type`, `trust`, `version`) — see `contracts/knowledge-base.md` in that skill. A card without it is invisible in the knowledge-base panel.
+
+Write the card at **whatever level it actually reached**, not only L4+: the trust level is a field on the card, never a folder, and the panel ranks by it. There is no `INDEX.md` to maintain — the host computes the tally from the cards themselves.
 
 ## Error/Hallucination Log
-Use `templates/error-hallucination-log-template.md` for every model/source/workflow error caught — especially version hallucinations. These entries are the system's main signal that it is working.
+Use the `error-hallucination-log-template.md` shipped with the `validation-methodology` skill for every model/source/workflow error caught — especially version hallucinations. These entries are the system's main signal that it is working.
