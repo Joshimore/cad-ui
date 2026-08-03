@@ -13,14 +13,19 @@ from __future__ import annotations
 
 import datetime
 import re
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import frontmatter
 
+from ..core import state
 from ..core.config import WorkspaceConfig
 
 WORKDIR_NAME = "Working directory"
+# Archived projects move here; the name is already in DEFAULT_EXCLUDED_DIRS, so the
+# contents drop out of the tree, search and graph automatically.
+ARCHIVE_DIRNAME = "_archive"
 SOON_DAYS = 3
 PROJECT_STATUSES = ("active", "done", "frozen")
 
@@ -134,6 +139,8 @@ def list_projects(cfg: WorkspaceConfig) -> list[Project]:
     for child in sorted(wd.iterdir(), key=lambda p: p.name.lower()):
         if not child.is_dir():
             continue
+        if child.name == ARCHIVE_DIRNAME:
+            continue  # archived projects are hidden, and the folder itself is not a project
         md = child / "project.md"
         meta = _load_meta(md) if md.is_file() else {}
         tasks = list_tasks(cfg, child.name)
@@ -286,6 +293,38 @@ def set_project_status(cfg: WorkspaceConfig, slug: str, status: str) -> None:
         post = frontmatter.Post("", name=slug, created=datetime.date.today().isoformat())
     post["status"] = status
     md.write_text(frontmatter.dumps(post) + "\n", encoding="utf-8")
+
+
+def _require_project(cfg: WorkspaceConfig, slug: str) -> Path:
+    """Validate a client-supplied slug and return the project folder.
+
+    Membership in _existing_project_slugs (iterdir names) implicitly rejects '..',
+    slashes and absolute paths — the same guard the other mutators rely on.
+    """
+    if slug == ARCHIVE_DIRNAME or slug not in _existing_project_slugs(cfg):
+        raise WorkError("Проект не найден.")
+    return _workdir(cfg) / slug
+
+
+def archive_project(cfg: WorkspaceConfig, slug: str) -> None:
+    """Move a project to 'Working directory/_archive/<slug>/' (recoverable by hand)."""
+    proj = _require_project(cfg, slug)
+    archive = _workdir(cfg) / ARCHIVE_DIRNAME
+    archive.mkdir(exist_ok=True)
+    dest = archive / slug
+    n = 2
+    while dest.exists():  # same dedup idea as slugify: -2, -3, …
+        dest = archive / f"{slug}-{n}"
+        n += 1
+    shutil.move(str(proj), str(dest))
+    state.prune_favorites(cfg, f"{WORKDIR_NAME}/{slug}/")
+
+
+def delete_project(cfg: WorkspaceConfig, slug: str) -> None:
+    """Permanently delete a project folder. Unrecoverable: contents are git-ignored."""
+    proj = _require_project(cfg, slug)
+    shutil.rmtree(proj)
+    state.prune_favorites(cfg, f"{WORKDIR_NAME}/{slug}/")
 
 
 def set_project_color(cfg: WorkspaceConfig, slug: str, color: str) -> None:

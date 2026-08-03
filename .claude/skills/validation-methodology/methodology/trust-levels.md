@@ -35,5 +35,5 @@ Promotion is mechanical, not a feeling. Promote a claim to a level **iff**:
 **MAJOR** objections cap the level or narrow the scope of the claim. **MINOR** objections are recorded but do not block. A BLOCKING objection — most often a version mismatch — caps or rejects regardless of how strong the sources look.
 
 ## Anti-patterns and the terminal states
-- **REJECTED** claims (a BLOCKING objection held, or a test failed) become version-stamped **anti-patterns** (`knowledge-base/ANTI-PATTERNS.md`). A future match to an anti-pattern **flags and triggers a re-check against the current version — it never auto-rejects.**
+- **REJECTED** claims (a BLOCKING objection held, or a test failed) become version-stamped **anti-patterns** — one file each under `knowledge-base/anti-patterns/`, format in `contracts/knowledge-base.md`. A future match to an anti-pattern **flags and triggers a re-check against the current version — it never auto-rejects.**
 - **UNVERIFIABLE** is NOT an anti-pattern. "Could not verify" is not "verified false"; recording it as a negative pattern would poison the anti-pattern base with false negatives.

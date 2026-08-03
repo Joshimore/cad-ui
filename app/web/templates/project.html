@@ -23,6 +23,11 @@
     </label>
     {% if project.due %}<span class="due-pill">дедлайн проекта: {{ project.due }}</span>{% endif %}
     {% if project.rel_md %}<a class="card-link nav" href="/view?path={{ project.rel_md | urlencode }}">project.md ↗</a>{% endif %}
+    <span class="head-spacer"></span>
+    <button class="btn btn-ghost" id="project-archive" data-slug="{{ project.slug }}"
+            title="Перенести в Working directory/_archive/ — из интерфейса исчезнет, папка останется на диске">В архив</button>
+    <button class="btn btn-danger" id="project-delete" data-slug="{{ project.slug }}"
+            title="Стереть папку проекта с диска. Восстановить будет нельзя">Удалить навсегда</button>
   </div>
 
   <div class="create-bar">

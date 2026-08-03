@@ -29,4 +29,4 @@ Turn model/source statements into concrete claims — test the **claim**, not th
 The cycle is complete when a teammate can **reproduce at least the test from the documentation alone**, with no verbal explanation, and the decision (including limitations and "do not apply to" notes) is explicit.
 
 ## Documenting outcomes (every claim, not only successes)
-Both successful and failed claims run through `synthesizer → reporter`. Successes become Knowledge Cards; **REJECTED** claims and failed tests become version-stamped anti-patterns (`knowledge-base/ANTI-PATTERNS.md`) plus Error Log entries; **UNVERIFIABLE** claims are recorded as such and are never turned into anti-patterns.
+Both successful and failed claims run through `synthesizer → reporter`. Successes become Knowledge Cards; **REJECTED** claims and failed tests become version-stamped anti-patterns — one file each under `knowledge-base/anti-patterns/` — plus Error Log entries; **UNVERIFIABLE** claims are recorded as such and are never turned into anti-patterns.

@@ -46,3 +46,17 @@ def toggle_favorite(cfg: WorkspaceConfig, rel_path: str) -> bool:
 
 def is_favorite(cfg: WorkspaceConfig, rel_path: str) -> bool:
     return rel_path.replace("\\", "/") in [f.replace("\\", "/") for f in load_favorites(cfg)]
+
+
+def prune_favorites(cfg: WorkspaceConfig, rel_prefix: str) -> None:
+    """Drop favorites under a removed/moved folder so fav_count stays honest."""
+    favorites = load_favorites(cfg)
+    prefix = rel_prefix.replace("\\", "/")
+    kept = [f for f in favorites if not f.replace("\\", "/").startswith(prefix)]
+    if len(kept) == len(favorites):
+        return
+    cfg.state_dir.mkdir(exist_ok=True)
+    _state_path(cfg).write_text(
+        json.dumps({"favorites": kept}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )

@@ -119,8 +119,53 @@
       const seg = so.closest(".status-seg");
       apiPost("/api/project/status", { slug: seg.dataset.slug, status: so.dataset.status })
         .then((r) => { if (r.ok) navigate(location.pathname + location.search, false); });
+      return;
     }
+
+    /* ---------- project archive / delete ---------- */
+    const arch = e.target.closest("#project-archive");
+    if (arch) {
+      arch.disabled = true;
+      projectRemove("/api/project/archive", arch);
+      return;
+    }
+    const del = e.target.closest("#project-delete");
+    if (del) {
+      if (!del.classList.contains("armed")) {
+        // First click arms the button; a click elsewhere or a timeout disarms it.
+        del.classList.add("armed");
+        if (!del.dataset.label) del.dataset.label = del.textContent;
+        del.textContent = "Точно удалить навсегда?";
+        del._armTimer = setTimeout(() => disarmDelete(del), 4000);
+      } else {
+        clearTimeout(del._armTimer);
+        del.disabled = true;
+        projectRemove("/api/project/delete", del);
+      }
+      return;
+    }
+    const armed = document.querySelector("#project-delete.armed");
+    if (armed) disarmDelete(armed);  // any other click disarms
   });
+
+  function disarmDelete(btn) {
+    clearTimeout(btn._armTimer);
+    btn.classList.remove("armed");
+    if (btn.dataset.label) btn.textContent = btn.dataset.label;
+  }
+
+  async function projectRemove(url, btn) {
+    try {
+      const r = await apiPost(url, { slug: btn.dataset.slug });
+      if (r.ok) { navigate("/projects", true); return; }  // the old URL would 404
+      const data = await r.json().catch(() => ({}));
+      alert(data.detail || "Не получилось.");
+    } catch (_) {
+      alert("Ошибка сети.");
+    }
+    btn.disabled = false;
+    if (btn.id === "project-delete") disarmDelete(btn);
+  }
 
   /* ---------- project colour picker ---------- */
   document.addEventListener("change", function (e) {

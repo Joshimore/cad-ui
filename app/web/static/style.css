@@ -300,6 +300,10 @@ body {
 .btn-primary:hover { background: var(--accent-hi); }
 .btn-ghost { border-color: var(--border); color: var(--text); background: var(--panel); }
 .btn-ghost:hover { background: var(--hover); }
+.btn-danger { border-color: var(--danger); color: var(--danger); background: var(--panel); }
+.btn-danger:hover { background: var(--hover); }
+.btn-danger.armed { background: var(--danger); color: #fdf2ea; font-weight: 600; }
+.btn-danger:disabled { opacity: 0.6; pointer-events: none; }
 
 /* orbit */
 .hero-orbit { position: relative; width: 300px; flex-shrink: 0; }
@@ -703,6 +707,7 @@ li.empty, .empty { color: var(--faint); padding: 6px 8px; font-style: italic; }
 .project-metrics .over { color: var(--danger); }
 
 .project-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.project-head .head-spacer { flex: 1; }
 
 .task-list { list-style: none; margin: 0; padding: 0; }
 .task-row {

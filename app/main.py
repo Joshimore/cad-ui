@@ -301,6 +301,24 @@ def create_app(workspace_root: Path) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc))
         return JSONResponse({"ok": True})
 
+    @app.post("/api/project/archive")
+    def project_archive(payload: dict = Body(...)):
+        try:
+            projects.archive_project(cfg, payload.get("slug", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        index.sync(cfg, force=True)  # drop the project's docs from search immediately
+        return JSONResponse({"ok": True})
+
+    @app.post("/api/project/delete")
+    def project_delete(payload: dict = Body(...)):
+        try:
+            projects.delete_project(cfg, payload.get("slug", ""))
+        except projects.WorkError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        index.sync(cfg, force=True)
+        return JSONResponse({"ok": True})
+
     # ---------- api ----------
 
     @app.get("/api/tree", response_class=HTMLResponse)
